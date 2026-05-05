@@ -62,6 +62,8 @@ void next_slot(struct timer_id_t * timer_id) {
 	/* Tell to timer that we have done our job in current slot */
 	pthread_mutex_lock(&timer_id->event_lock);
 	timer_id->done = 1;
+	/* trace */
+	//printf("[trace] device signaled done\n");
 	pthread_cond_signal(&timer_id->event_cond);
 	pthread_mutex_unlock(&timer_id->event_lock);
 
@@ -107,11 +109,14 @@ struct timer_id_t * attach_event() {
 		pthread_cond_init(&container->id.timer_cond, NULL);
 		pthread_mutex_init(&container->id.timer_lock, NULL);
 		if (dev_list == NULL) {
-			dev_list = container;
-			dev_list->next = NULL;
+				dev_list = container;
+				dev_list->next = NULL;
 		}else{
-			container->next = dev_list;
-			dev_list = container;
+				/* Append to the end to preserve registration order */
+				struct timer_id_container_t *t = dev_list;
+				while (t->next != NULL) t = t->next;
+				t->next = container;
+				container->next = NULL;
 		}
 		return &(container->id);
 	}

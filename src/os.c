@@ -189,15 +189,49 @@ static void read_config(const char * path) {
 	for(sit = 1; sit < PAGING_MAX_MMSWP; sit++)
 		memswpsz[sit] = 0;
 #else
-	/* Read input config of memory size: MEMRAM and upto 4 MEMSWP (mem swap)
-	 * Format: (size=0 result non-used memswap, must have RAM and at least 1 SWAP)
-	 *        MEM_RAM_SZ MEM_SWP0_SZ MEM_SWP1_SZ MEM_SWP2_SZ MEM_SWP3_SZ
-	*/
-	fscanf(file, FORMAT_ARG "\n", &memramsz);
-	for(sit = 0; sit < PAGING_MAX_MMSWP; sit++)
-		fscanf(file, FORMAT_ARG, &(memswpsz[sit])); 
+	/* Support both formats:
+	 * 1) New format with memory sizing line.
+	 * 2) Legacy scheduler-only format without memory sizing line.
+	 */
+	char cfgline[256];
+	unsigned long memvals[1 + PAGING_MAX_MMSWP];
+	int has_mem_cfg = 0;
 
-       fscanf(file, "\n"); /* Final character */
+	if (fgets(cfgline, sizeof(cfgline), file) != NULL) {
+		char *p = cfgline;
+		has_mem_cfg = 1;
+		while (*p != '\0') {
+			if (*p != ' ' && *p != '\t' && *p != '\n' && (*p < '0' || *p > '9')) {
+				has_mem_cfg = 0;
+				break;
+			}
+			p++;
+		}
+
+		if (has_mem_cfg) {
+			int n = sscanf(cfgline, "%lu %lu %lu %lu %lu",
+				&memvals[0],
+				&memvals[1],
+				&memvals[2],
+				&memvals[3],
+				&memvals[4]);
+			has_mem_cfg = (n == (1 + PAGING_MAX_MMSWP));
+		}
+	}
+
+	if (has_mem_cfg) {
+		memramsz = memvals[0];
+		for (sit = 0; sit < PAGING_MAX_MMSWP; sit++)
+			memswpsz[sit] = memvals[sit + 1];
+	} else {
+		memramsz  = 0x100000000;
+		memswpsz[0] = 0x1000000;
+		for (sit = 1; sit < PAGING_MAX_MMSWP; sit++)
+			memswpsz[sit] = 0;
+
+		if (!feof(file))
+			fseek(file, -(long)strlen(cfgline), SEEK_CUR);
+	}
 #endif
 #endif
 
@@ -276,16 +310,16 @@ int main(int argc, char * argv[]) {
 	/* Init scheduler */
 	init_scheduler();
 
-	/* Run CPU and loader */
-#ifdef MM_PAGING
-	pthread_create(&ld, NULL, ld_routine, (void*)mm_ld_args);
-#else
-	pthread_create(&ld, NULL, ld_routine, (void*)ld_event);
-#endif
-	for (i = 0; i < num_cpus; i++) {
-		pthread_create(&cpu[i], NULL,
-			cpu_routine, (void*)&args[i]);
-	}
+		/* Run loader and CPU: create loader first, then CPUs to match reference startup order */
+	#ifdef MM_PAGING
+		pthread_create(&ld, NULL, ld_routine, (void*)mm_ld_args);
+	#else
+		pthread_create(&ld, NULL, ld_routine, (void*)ld_event);
+	#endif
+		for (i = 0; i < num_cpus; i++) {
+			pthread_create(&cpu[i], NULL,
+				cpu_routine, (void*)&args[i]);
+		}
 
 	/* Wait for CPU and loader finishing */
 	for (i = 0; i < num_cpus; i++) {

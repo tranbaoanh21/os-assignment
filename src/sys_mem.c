@@ -26,12 +26,43 @@ int __sys_memmap(struct krnl_t *krnl, uint32_t pid, struct sc_regs* regs)
 {
    int memop = regs->a1;
    BYTE value;
+    struct pcb_t *caller = NULL;
+    int i;
    
    /* TODO THIS DUMMY CREATE EMPTY PROC TO AVOID COMPILER NOTIFY 
     *      need to be eliminated
 	*/
-   struct pcb_t *caller = malloc(sizeof(struct pcb_t));
-   caller->krnl = malloc(sizeof(struct krnl_t));
+    for (i = 0; krnl->running_list != NULL && i < krnl->running_list->size; i++) {
+        if (krnl->running_list->proc[i] != NULL && krnl->running_list->proc[i]->pid == pid) {
+            caller = krnl->running_list->proc[i];
+            break;
+        }
+    }
+
+    if (caller == NULL && krnl->ready_queue != NULL) {
+        for (i = 0; i < krnl->ready_queue->size; i++) {
+            if (krnl->ready_queue->proc[i] != NULL && krnl->ready_queue->proc[i]->pid == pid) {
+                caller = krnl->ready_queue->proc[i];
+                break;
+            }
+        }
+    }
+
+#ifdef MLQ_SCHED
+    if (caller == NULL && krnl->mlq_ready_queue != NULL) {
+        for (int p = 0; p < MAX_PRIO && caller == NULL; p++) {
+            for (i = 0; i < krnl->mlq_ready_queue[p].size; i++) {
+                if (krnl->mlq_ready_queue[p].proc[i] != NULL && krnl->mlq_ready_queue[p].proc[i]->pid == pid) {
+                    caller = krnl->mlq_ready_queue[p].proc[i];
+                    break;
+                }
+            }
+        }
+    }
+#endif
+
+    if (caller == NULL)
+        return -1;
 
    /*
     * @bksysnet: Please note in the dual spacing design
