@@ -1,0 +1,3 @@
+20 2
+syscall 17 4 0 0
+syscall 17 5 0 65

@@ -6,6 +6,8 @@
 /* CPU Bus definition */
 #define PAGING_CPU_BUS_WIDTH 22 /* 22bit bus - MAX SPACE 4MB */
 #define PAGING_PAGESZ  256      /* 256B or 8-bits PAGE NUMBER */
+#define PAGING_KMEM_BASE ((addr_t)0xffa0000000000000ULL)
+#define PAGING_KMEM_LIMIT ((addr_t)0xffd1ffffffffffffULL)
 #define PAGING_MEMRAMSZ BIT(21)
 #define PAGING_PAGE_ALIGNSZ(sz) (DIV_ROUND_UP(sz,PAGING_PAGESZ)*PAGING_PAGESZ)
 
@@ -103,11 +105,11 @@ struct vm_rg_struct * init_vm_rg(addr_t rg_start, addr_t rg_end);
 int enlist_vm_rg_node(struct vm_rg_struct **rglist, struct vm_rg_struct* rgnode);
 int enlist_pgn_node(struct pgn_t **pgnlist, addr_t pgn);
 int vmap_pgd_memset(struct pcb_t *caller, addr_t addr, int pgnum);
-addr_t vmap_page_range(struct pcb_t *caller, addr_t addr, int pgnum, 
+int vmap_page_range(struct pcb_t *caller, addr_t addr, int pgnum,
                     struct framephy_struct *frames, struct vm_rg_struct *ret_rg);
-addr_t vm_map_range(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg);
-addr_t vm_map_kernel(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg);
-addr_t alloc_pages_range(struct pcb_t *caller, int incpgnum, struct framephy_struct **frm_lst);
+int vm_map_range(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg);
+int vm_map_kernel(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg);
+int alloc_pages_range(struct pcb_t *caller, int incpgnum, struct framephy_struct **frm_lst);
 int __swap_cp_page(struct memphy_struct *mpsrc, addr_t srcfpn,
                 struct memphy_struct *mpdst, addr_t dstfpn) ;
 /* KMEM prototypes */
@@ -163,6 +165,8 @@ struct vm_area_struct *get_vma_by_num(struct mm_struct *mm, int vmaid);
 
 /* MEM/PHY protypes */
 int MEMPHY_get_freefp(struct memphy_struct *mp, addr_t *fpn);
+int MEMPHY_get_contiguous_fps(struct memphy_struct *mp, int count,
+                              addr_t *start_fpn);
 int MEMPHY_put_freefp(struct memphy_struct *mp, addr_t fpn);
 int MEMPHY_read(struct memphy_struct * mp, addr_t addr, BYTE *value);
 int MEMPHY_write(struct memphy_struct * mp, addr_t addr, BYTE data);
@@ -177,4 +181,6 @@ int print_list_vma(struct vm_area_struct *rg);
 
 int print_list_pgn(struct pgn_t *ip);
 int print_pgtbl(struct pcb_t *ip, addr_t start, addr_t end);
+int destroy_mm(struct mm_struct *mm, struct memphy_struct *mram,
+               struct memphy_struct *active_mswp);
 #endif

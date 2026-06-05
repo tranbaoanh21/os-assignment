@@ -167,7 +167,7 @@ int vmap_pgd_memset(struct pcb_t *caller,           // process call
 /*
  * vmap_page_range - map a range of page at aligned address
  */
-addr_t vmap_page_range(struct pcb_t *caller,           // process call
+int vmap_page_range(struct pcb_t *caller,           // process call
                     addr_t addr,                       // start address which is aligned to pagesz
                     int pgnum,                      // num of mapping page
                     struct framephy_struct *frames, // list of the mapped frames
@@ -184,7 +184,7 @@ addr_t vmap_page_range(struct pcb_t *caller,           // process call
  * @frm_lst   : frame list
  */
 
-addr_t alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struct **frm_lst)
+int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struct **frm_lst)
 {
   printf("[ERROR] %s: This feature 32 bit mode is deprecated\n", __func__);
   return 0;
@@ -199,7 +199,7 @@ addr_t alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_st
  * @incpgnum  : number of mapped page
  * @ret_rg    : returned region
  */
-addr_t vm_map_ram(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg)
+int vm_map_ram(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg)
 {
   printf("[ERROR] %s: This feature 32 bit mode is deprecated\n", __func__);
   return 0;

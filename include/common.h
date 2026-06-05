@@ -41,7 +41,7 @@ typedef ARG_TYPE arg_t;
  *            based on the address mode
  */
 #ifdef MM64
-#define FORMAT_ARG "%lu"
+#define FORMAT_ARG "%llu"
 #else
 #define FORMAT_ARG "%u"
 #endif
@@ -116,6 +116,9 @@ struct pcb_t
 	uint32_t prio;
 #endif
 	struct krnl_t *krnl;	
+#ifdef MM_PAGING
+	struct mm_struct *mm;
+#endif
 	struct page_table_t *page_table; // Page table
 	uint32_t bp;			 // Break pointer
 };

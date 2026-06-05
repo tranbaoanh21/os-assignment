@@ -37,7 +37,7 @@ typedef ADDR_TYPE addr_t;
  *            based on the address mode
  */
 #ifdef MM64
-#define FORMAT_ADDR "%lu"
+#define FORMAT_ADDR "%llu"
 #define FORMATX_ADDR "%16p"
 #else
 #define FORMAT_ADDR "%d"
@@ -86,6 +86,9 @@ struct vm_area_struct {
 struct kcache_pool_struct {
    int size;
    int align;
+   int used;
+   int capacity;
+   addr_t physical_storage;
 
 #ifdef MM64
    addr_t storage;
@@ -119,6 +122,17 @@ struct mm_struct {
 
    /* kmem cache pool */
    struct kcache_pool_struct *kcpooltbl;
+
+   /* Simple kernel-space region table used by kmalloc/slab helpers. */
+   struct vm_rg_struct ksymrgtbl[PAGING_MAX_SYMTBL_SZ];
+   addr_t kphy_start[PAGING_MAX_SYMTBL_SZ];
+   int kphy_npages[PAGING_MAX_SYMTBL_SZ];
+   addr_t kmem_sbrk;
+
+   /* Multi-level paging statistics used by the simulator report. */
+   uint64_t pgtable_accesses;
+   uint64_t pgtable_walks;
+   uint64_t pgtable_bytes;
 
 };
 

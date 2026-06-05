@@ -1,0 +1,12 @@
+Time slot   0
+ld_routine
+Time slot   1
+	Loaded a process at input/proc/mm64c, PID: 1 PRIO: 15
+Time slot   2
+	CPU 0: Dispatched process  1
+Time slot   3
+MM64 rejected non-canonical address 0x100000000000000
+Time slot   4
+	CPU 0: Processed  1 has finished
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=1 accesses=5 bytes=20480
+	CPU 0 stopped

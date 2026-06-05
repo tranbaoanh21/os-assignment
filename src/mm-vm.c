@@ -24,9 +24,9 @@
  * Some implementations define vm_map_ram; expose vm_map_range to match
  * the prototype in include/mm.h.
  */
-addr_t vm_map_range(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg)
+int vm_map_range(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg)
 {
-  extern addr_t vm_map_ram(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg);
+  extern int vm_map_ram(struct pcb_t *caller, addr_t astart, addr_t aend, addr_t mapstart, int incpgnum, struct vm_rg_struct *ret_rg);
   return vm_map_ram(caller, astart, aend, mapstart, incpgnum, ret_rg);
 }
 
@@ -46,7 +46,7 @@ struct vm_area_struct *get_vma_by_num(struct mm_struct *mm, int vmaid)
 
   while (vmait < vmaid)
   {
-    if (pvma == NULL)
+    if (pvma == NULL || pvma->vm_next == NULL)
       return NULL;
 
     pvma = pvma->vm_next;
@@ -82,7 +82,7 @@ struct vm_rg_struct *get_vm_area_node_at_brk(struct pcb_t *caller, int vmaid, ad
   // newrg->rg_start = ...
   // newrg->rg_end = ...
   */
-  struct vm_area_struct *cur_vma = get_vma_by_num(caller->krnl->mm, vmaid);
+  struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
 
   newrg = malloc(sizeof(struct vm_rg_struct));
   newrg->rg_start = cur_vma->sbrk;
@@ -103,7 +103,7 @@ struct vm_rg_struct *get_vm_area_node_at_brk(struct pcb_t *caller, int vmaid, ad
  */
 int validate_overlap_vm_area(struct pcb_t *caller, int vmaid, addr_t vmastart, addr_t vmaend)
 {
-  //struct vm_area_struct *vma = caller->krnl->mm->mmap;
+  //struct vm_area_struct *vma = caller->mm->mmap;
 
   /* TODO validate the planned memory area is not overlapped */
   if (vmastart >= vmaend)
@@ -111,7 +111,7 @@ int validate_overlap_vm_area(struct pcb_t *caller, int vmaid, addr_t vmastart, a
     return -1;
   }
 
-  struct vm_area_struct *vma = caller->krnl->mm->mmap;
+  struct vm_area_struct *vma = caller->mm->mmap;
   if (vma == NULL)
   {
     return -1;
@@ -153,7 +153,7 @@ int inc_vma_limit(struct pcb_t *caller, int vmaid, addr_t inc_sz)
   inc_amt = PAGING_PAGE_ALIGNSZ(inc_sz);
   incnumpage = (int)(inc_amt / PAGING_PAGESZ);
 
-  cur_vma = get_vma_by_num(caller->krnl->mm, vmaid);
+  cur_vma = get_vma_by_num(caller->mm, vmaid);
   if (cur_vma == NULL)
     return -1;
 

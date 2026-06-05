@@ -18,36 +18,40 @@ MAKE = $(CC) $(INC)
 
 # Object files needed by modules
 MEM_OBJ = $(addprefix $(OBJ)/, paging.o mem.o cpu.o loader.o)
-SYSCALL_OBJ = $(addprefix $(OBJ)/, syscall.o  sys_mem.o sys_listsyscall.o)
+SYSCALL_OBJ = $(addprefix $(OBJ)/, syscall.o  sys_mem.o sys_listsyscall.o sys_xxxhandler.o)
 OS_OBJ = $(addprefix $(OBJ)/, cpu.o mem.o loader.o queue.o os.o sched.o timer.o mm-vm.o mm64.o mm.o mm-memphy.o libstd.o libmem.o)
 OS_OBJ += $(SYSCALL_OBJ)
-SCHED_OBJ = $(addprefix $(OBJ)/, cpu.o loader.o)
 HEADER = $(wildcard $(INCLUDE)/*.h)
  
 all: os
 #mem sched os
 
-# Just compile memory management modules
-mem: $(MEM_OBJ)
-	$(MAKE) $(LFLAGS) $(MEM_OBJ) -o mem $(LIB)
+# Compatibility binaries use the complete simulator because CPU instructions
+# now enter memory management through the unified syscall layer.
+mem: os
+	cp os mem
 
-# Just compile scheduler
-sched: $(SCHED_OBJ)
-	$(MAKE) $(LFLAGS) $(MEM_OBJ) -o sched $(LIB)
+sched: os
+	cp os sched
+
+test: os
+	sh ./run.sh
 
 # Compile syscall
-syscalltbl.lst: $(SRC)/syscall.tbl
+$(SRC)/syscalltbl.lst: $(SRC)/syscall.tbl
 	@echo $(OS_OBJ)
 	chmod +x $(SRC)/syscalltbl.sh
-	$(SRC)/syscalltbl.sh $< $(SRC)/$@ 
+	$(SRC)/syscalltbl.sh $< $@
 #	mv $(OBJ)/syscalltbl.lst $(INCLUDE)/
 
 # Compile the whole OS simulation
-os: $(OBJ) syscalltbl.lst $(OS_OBJ)
+os: $(OBJ) $(SRC)/syscalltbl.lst $(OS_OBJ)
 	$(MAKE) $(LFLAGS) $(OS_OBJ) -o os $(LIB)
 
-$(OBJ)/%.o: %.c ${HEADER} $(OBJ)
+$(OBJ)/%.o: %.c ${HEADER} | $(OBJ)
 	$(MAKE) $(CFLAGS) $< -o $@
+
+$(OBJ)/syscall.o: $(SRC)/syscalltbl.lst
 
 # Prepare objectives container
 $(OBJ):

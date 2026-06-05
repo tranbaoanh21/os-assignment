@@ -8,10 +8,12 @@
  * for the sole purpose of studying while attending the course CO2018.
  */
 
+#include "common.h"
 #include "os-mm.h"
 #include "syscall.h"
 #include "libmem.h"
 #include "queue.h"
+#include "sched.h"
 #include <stdlib.h>
 
 #ifdef MM64
@@ -22,86 +24,100 @@
 
 //typedef char BYTE;
 
-int __sys_memmap(struct krnl_t *krnl, uint32_t pid, struct sc_regs* regs)
+static int caller_owns_phyaddr(struct pcb_t *caller, addr_t phyaddr)
 {
-   int memop = regs->a1;
-   BYTE value;
-    struct pcb_t *caller = NULL;
-    int i;
-   
-   /* TODO THIS DUMMY CREATE EMPTY PROC TO AVOID COMPILER NOTIFY 
-    *      need to be eliminated
-	*/
-    for (i = 0; krnl->running_list != NULL && i < krnl->running_list->size; i++) {
-        if (krnl->running_list->proc[i] != NULL && krnl->running_list->proc[i]->pid == pid) {
-            caller = krnl->running_list->proc[i];
-            break;
-        }
-    }
+   addr_t pgn;
+   addr_t fpn = phyaddr / PAGING_PAGESZ;
 
-    if (caller == NULL && krnl->ready_queue != NULL) {
-        for (i = 0; i < krnl->ready_queue->size; i++) {
-            if (krnl->ready_queue->proc[i] != NULL && krnl->ready_queue->proc[i]->pid == pid) {
-                caller = krnl->ready_queue->proc[i];
-                break;
-            }
-        }
-    }
-
-#ifdef MLQ_SCHED
-    if (caller == NULL && krnl->mlq_ready_queue != NULL) {
-        for (int p = 0; p < MAX_PRIO && caller == NULL; p++) {
-            for (i = 0; i < krnl->mlq_ready_queue[p].size; i++) {
-                if (krnl->mlq_ready_queue[p].proc[i] != NULL && krnl->mlq_ready_queue[p].proc[i]->pid == pid) {
-                    caller = krnl->mlq_ready_queue[p].proc[i];
-                    break;
-                }
-            }
-        }
-    }
-#endif
-
-    if (caller == NULL)
-        return -1;
-
-   /*
-    * @bksysnet: Please note in the dual spacing design
-    *            syscall implementations are in kernel space.
-    */
-
-   /* TODO: Traverse proclist to terminate the proc
-    *       stcmp to check the process match proc_name
-    */
-//	struct queue_t *running_list = krnl->running_list;
-
-    /* TODO Maching and marking the process */
-    /* user process are not allowed to access directly pcb in kernel space of syscall */
-    //....
-	
-   switch (memop) {
-   case SYSMEM_MAP_OP:
-            /* Reserved process case*/
-			vmap_pgd_memset(caller, regs->a2, regs->a3);
-            break;
-   case SYSMEM_INC_OP:
-            inc_vma_limit(caller, regs->a2, regs->a3);
-            break;
-   case SYSMEM_SWP_OP:
-            __mm_swap_page(caller, regs->a2, regs->a3);
-            break;
-   case SYSMEM_IO_READ:
-            MEMPHY_read(caller->krnl->mram, regs->a2, &value);
-            regs->a3 = value;
-            break;
-   case SYSMEM_IO_WRITE:
-            MEMPHY_write(caller->krnl->mram, regs->a2, regs->a3);
-            break;
-   default:
-            printf("Memop code: %d\n", memop);
-            break;
+   if (caller == NULL || caller->mm == NULL)
+      return 0;
+#ifdef MM64
+   for (pgn = 0; pgn < PAGING64_MAX_PGN; pgn++) {
+      uint32_t pte = (uint32_t)caller->mm->pt[pgn];
+      if (PAGING_PAGE_PRESENT(pte) &&
+          !(pte & PAGING_PTE_SWAPPED_MASK) &&
+          PAGING_FPN(pte) == fpn)
+         return 1;
    }
-   
+#else
+   for (pgn = 0; pgn < PAGING_MAX_PGN; pgn++) {
+      uint32_t pte = caller->mm->pgd[pgn];
+      if (PAGING_PAGE_PRESENT(pte) &&
+          !(pte & PAGING_PTE_SWAPPED_MASK) &&
+          PAGING_FPN(pte) == fpn)
+         return 1;
+   }
+#endif
    return 0;
 }
 
+int __sys_memmap(struct krnl_t *krnl, uint32_t pid, struct sc_regs* regs)
+{
+   int memop;
+   int ret = -1;
+   BYTE value;
+   addr_t addr;
+   struct pcb_t *caller;
 
+   if (krnl == NULL || regs == NULL)
+      return -1;
+   memop = regs->a1;
+   caller = find_proc_by_pid(pid);
+   if (caller == NULL || caller->mm == NULL)
+      return -1;
+
+   switch (memop) {
+   case SYSMEM_MAP_OP:
+      return vmap_pgd_memset(caller, regs->a2, regs->a3);
+   case SYSMEM_INC_OP:
+      return inc_vma_limit(caller, regs->a2, regs->a3);
+   case SYSMEM_SWP_OP:
+      return __mm_swap_page(caller, regs->a2, regs->a3);
+   case SYSMEM_IO_READ:
+      if (!caller_owns_phyaddr(caller, regs->a2)) {
+         printf("Kernel denied PID %u physical read at 0x%llx\n", pid,
+                (unsigned long long)regs->a2);
+         return -1;
+      }
+      ret = MEMPHY_read(krnl->mram, regs->a2, &value);
+      regs->a3 = value;
+      return ret;
+   case SYSMEM_IO_WRITE:
+      if (!caller_owns_phyaddr(caller, regs->a2)) {
+         printf("Kernel denied PID %u physical write at 0x%llx\n", pid,
+                (unsigned long long)regs->a2);
+         return -1;
+      }
+      return MEMPHY_write(krnl->mram, regs->a2, regs->a3);
+   case SYSMEM_ALLOC_OP:
+      ret = __alloc(caller, regs->a2, regs->a3, regs->a4, &addr);
+      regs->a4 = addr;
+      return ret;
+   case SYSMEM_FREE_OP:
+      return __free(caller, regs->a2, regs->a3);
+   case SYSMEM_READ_OP:
+      ret = __read(caller, regs->a2, regs->a3, regs->a4, &value);
+      regs->a4 = value;
+      return ret;
+   case SYSMEM_WRITE_OP:
+      return __write(caller, regs->a2, regs->a3, regs->a4, regs->a5);
+   case SYSMEM_KMALLOC_OP:
+      ret = __kmalloc(caller, -1, regs->a2, regs->a3, &addr);
+      regs->a4 = addr;
+      return ret;
+   case SYSMEM_CACHE_CREATE_OP:
+      return __kmem_cache_pool_create(caller, regs->a2, regs->a3, regs->a4);
+   case SYSMEM_CACHE_ALLOC_OP:
+      ret = __kmem_cache_alloc(caller, -1, regs->a2, regs->a3, &addr);
+      regs->a4 = addr;
+      return ret;
+   case SYSMEM_COPY_FROM_USER_OP:
+      return __kmem_copy_from_user(caller, regs->a2, regs->a3,
+                                   regs->a4, regs->a5);
+   case SYSMEM_COPY_TO_USER_OP:
+      return __kmem_copy_to_user(caller, regs->a2, regs->a3,
+                                 regs->a4, regs->a5);
+   default:
+      return -1;
+   }
+}

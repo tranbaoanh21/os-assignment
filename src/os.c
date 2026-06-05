@@ -12,10 +12,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdatomic.h>
 
 static int time_slot;
 static int num_cpus;
-static int done = 0;
+static atomic_int done = 0;
 static struct krnl_t os;
 
 #ifdef MM_PAGING
@@ -47,6 +48,21 @@ struct cpu_args {
 	int id;
 };
 
+#ifdef MM_PAGING
+static void cleanup_memphy(struct memphy_struct *memphy)
+{
+	struct framephy_struct *frame;
+
+	if (memphy == NULL)
+		return;
+	while ((frame = memphy->free_fp_list) != NULL) {
+		memphy->free_fp_list = frame->fp_next;
+		free(frame);
+	}
+	free(memphy->storage);
+	memphy->storage = NULL;
+}
+#endif
 
 static void * cpu_routine(void * args) {
 	struct timer_id_t * timer_id = ((struct cpu_args*)args)->timer_id;
@@ -68,6 +84,14 @@ static void * cpu_routine(void * args) {
 			/* The porcess has finish it job */
 			printf("\tCPU %d: Processed %2d has finished\n",
 				id ,proc->pid);
+			finish_proc(proc);
+#ifdef MM_PAGING
+			print_pgtbl(proc, 0, -1);
+			destroy_mm(proc->mm, proc->krnl->mram, proc->krnl->active_mswp);
+#endif
+			free(proc->code->text);
+			free(proc->code);
+			free(proc->page_table);
 			free(proc);
 			proc = get_proc();
 			time_left = 0;
@@ -80,7 +104,7 @@ static void * cpu_routine(void * args) {
 		}
 		
 		/* Recheck process status after loading new process */
-		if (proc == NULL && done) {
+		if (proc == NULL && atomic_load(&done)) {
 			/* No process to run, exit */
 			printf("\tCPU %d stopped\n", id);
 			break;
@@ -114,22 +138,17 @@ static void * ld_routine(void * args) {
 	struct timer_id_t * timer_id = (struct timer_id_t*)args;
 #endif
 	int i = 0;
-  /* TODO init kernel page table directory */
+	/* Initialize the shared kernel page-table branch. */
 #ifdef MM64
-	os.krnl_pgd = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
-	os.krnl_p4d = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
-	os.krnl_pud = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
-	os.krnl_pmd = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
-	os.krnl_pt = malloc(PAGING64_MAX_PGN * sizeof(addr_t));
-
-	for (i = 0; i < PAGING64_MAX_PGN; i++)
-	{
-	   os.krnl_pgd[i] = (addr_t)&os.krnl_p4d;
-	   os.krnl_p4d[i] = (addr_t)&os.krnl_pud;
-	   os.krnl_pud[i] = (addr_t)&os.krnl_pmd;
-	   os.krnl_pmd[i] = (addr_t)&os.krnl_pt;
-	   os.krnl_pt[i] = 0;
-	}
+	os.krnl_pgd = calloc(PAGING64_ENTRIES, sizeof(addr_t));
+	os.krnl_p4d = calloc(PAGING64_ENTRIES, sizeof(addr_t));
+	os.krnl_pud = calloc(PAGING64_ENTRIES, sizeof(addr_t));
+	os.krnl_pmd = calloc(PAGING64_ENTRIES, sizeof(addr_t));
+	os.krnl_pt = calloc(PAGING64_ENTRIES, sizeof(addr_t));
+	os.krnl_pgd[0] = (addr_t)os.krnl_p4d;
+	os.krnl_p4d[0] = (addr_t)os.krnl_pud;
+	os.krnl_pud[0] = (addr_t)os.krnl_pmd;
+	os.krnl_pmd[0] = (addr_t)os.krnl_pt;
 #else
 	os.krnl_pgd = malloc(PAGING_MAX_PGN * sizeof(uint32_t));
 #endif
@@ -146,11 +165,12 @@ static void * ld_routine(void * args) {
 			next_slot(timer_id);
 		}
 #ifdef MM_PAGING
-		krnl->mm = malloc(sizeof(struct mm_struct));
-		init_mm(krnl->mm, proc);
+		proc->mm = malloc(sizeof(struct mm_struct));
+		init_mm(proc->mm, proc);
 		krnl->mram = mram;
 		krnl->mswp = mswp;
 		krnl->active_mswp = active_mswp;
+		krnl->active_mswp_id = 0;
 #endif
 		printf("\tLoaded a process at %s, PID: %d PRIO: %ld\n",
 			ld_processes.path[i], proc->pid, ld_processes.prio[i]);
@@ -161,7 +181,10 @@ static void * ld_routine(void * args) {
 	}
 	free(ld_processes.path);
 	free(ld_processes.start_time);
-	done = 1;
+#ifdef MLQ_SCHED
+	free(ld_processes.prio);
+#endif
+	atomic_store(&done, 1);
 	detach_event(timer_id);
 	pthread_exit(NULL);
 }
@@ -255,6 +278,7 @@ static void read_config(const char * path) {
 }
 
 int main(int argc, char * argv[]) {
+	setbuf(stdout, NULL);
 	/* Read config */
 	if (argc != 2) {
 		printf("Usage: os [path to configure file]\n");
@@ -329,10 +353,26 @@ int main(int argc, char * argv[]) {
 
 	/* Stop timer */
 	stop_timer();
+	finish_scheduler();
+
+#ifdef MM_PAGING
+	cleanup_memphy(&mram);
+	for (sit = 0; sit < PAGING_MAX_MMSWP; sit++)
+		cleanup_memphy(&mswp[sit]);
+	free(mm_ld_args);
+#ifdef MM64
+	free(os.krnl_pt);
+	free(os.krnl_pmd);
+	free(os.krnl_pud);
+	free(os.krnl_p4d);
+	free(os.krnl_pgd);
+#else
+	free(os.krnl_pgd);
+#endif
+#endif
+	free(args);
+	free(cpu);
 
 	return 0;
 
 }
-
-
-

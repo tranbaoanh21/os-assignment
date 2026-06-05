@@ -4,26 +4,19 @@ Time slot   1
 	Loaded a process at input/proc/sc2, PID: 1 PRIO: 15
 Time slot   2
 	CPU 0: Dispatched process  1
-liballoc:178
-print_pgtbl:
- PDG=b5cfe220b5301d30 P4g=b5cfe220b5302d40 PUD=b5cfe220b5303d50 PMD=b5cfe220b5304d60
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=1 accesses=5 bytes=20480
 Time slot   3
-libwrite:502
-print_pgtbl:
- PDG=b5cfe210b5301d30 P4g=b5cfe210b5302d40 PUD=b5cfe210b5303d50 PMD=b5cfe210b5304d60
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=3 accesses=15 bytes=20480
 Time slot   4
 	CPU 0: Put process  1 to run queue
 	CPU 0: Dispatched process  1
-libwrite:502
-print_pgtbl:
- PDG=b5cfe210b5301d30 P4g=b5cfe210b5302d40 PUD=b5cfe210b5303d50 PMD=b5cfe210b5304d60
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=5 accesses=25 bytes=20480
 Time slot   5
-libwrite:502
-print_pgtbl:
- PDG=b5cfe210b5301d30 P4g=b5cfe210b5302d40 PUD=b5cfe210b5303d50 PMD=b5cfe210b5304d60
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=7 accesses=35 bytes=20480
 Time slot   6
 	CPU 0: Put process  1 to run queue
 	CPU 0: Dispatched process  1
 Time slot   7
 	CPU 0: Processed  1 has finished
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=7 accesses=35 bytes=20480
 	CPU 0 stopped

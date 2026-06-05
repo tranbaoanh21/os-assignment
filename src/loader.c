@@ -49,7 +49,7 @@ static enum ins_opcode_t get_opcode(char * opt) {
 
 struct pcb_t * load(const char * path) {
 	/* Create new PCB for the new process */
-	struct pcb_t * proc = (struct pcb_t * )malloc(sizeof(struct pcb_t));
+	struct pcb_t * proc = (struct pcb_t * )calloc(1, sizeof(struct pcb_t));
 	proc->pid = avail_pid;
 	avail_pid++;
 	proc->page_table =
@@ -63,8 +63,8 @@ struct pcb_t * load(const char * path) {
 		printf("Cannot find process description at '%s'\n", path);
 		exit(1);		
 	}
-	snprintf(proc->path, 2*sizeof(path)+1, "%s", path);
-	char opcode[10];
+	snprintf(proc->path, sizeof(proc->path), "%s", path);
+	char opcode[64];
 	proc->code = (struct code_seg_t*)malloc(sizeof(struct code_seg_t));
 	fscanf(file, "%u %u", &proc->priority, &proc->code->size);
 	proc->code->text = (struct inst_t*)malloc(
@@ -118,8 +118,7 @@ struct pcb_t * load(const char * path) {
 			exit(1);
 		}
 	}
+	fclose(file);
 	return proc;
 }
-
-
 
