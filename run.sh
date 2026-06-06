@@ -17,8 +17,11 @@ for test in \
   os_mem_protection \
   sched \
   sched_0 \
-  sched_1
+  sched_1 \
+  sched_prio \
+  sched_out_of_slot
 do
   echo "Running $test"
   ./os "$test" > "output/$test.output"
+  python3 gantt.py "input/$test" "output/$test.output" "output_img/$test.png"
 done

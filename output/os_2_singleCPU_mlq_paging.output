@@ -39,12 +39,12 @@ Time slot  14
 MM64 pid=4 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
 Time slot  15
 Time slot  16
-	Loaded a process at input/proc/s1, PID: 5 PRIO: 0
 	CPU 0: Put process  4 to run queue
-	CPU 0: Dispatched process  5
+	CPU 0: Dispatched process  4
+	Loaded a process at input/proc/s1, PID: 5 PRIO: 0
 Time slot  17
 Time slot  18
-	CPU 0: Put process  5 to run queue
+	CPU 0: Put process  4 to run queue
 	CPU 0: Dispatched process  5
 Time slot  19
 Time slot  20
@@ -55,12 +55,12 @@ Time slot  22
 	CPU 0: Put process  5 to run queue
 	CPU 0: Dispatched process  5
 Time slot  23
+Time slot  24
+	CPU 0: Put process  5 to run queue
+	CPU 0: Dispatched process  5
+Time slot  25
 	CPU 0: Processed  5 has finished
 MM64 pid=5 va=0x0 indexes=[0,0,0,0,0] walks=0 accesses=0 bytes=20480
-	CPU 0: Dispatched process  4
-Time slot  24
-Time slot  25
-	CPU 0: Put process  4 to run queue
 	CPU 0: Dispatched process  4
 Time slot  26
 Time slot  27

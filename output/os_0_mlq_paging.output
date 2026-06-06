@@ -5,8 +5,8 @@ Time slot   1
 	CPU 0: Dispatched process  1
 	Loaded a process at input/proc/p1s, PID: 2 PRIO: 15
 Time slot   2
-MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
 	CPU 1: Dispatched process  2
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
 Time slot   3
 MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=4 accesses=20 bytes=20480
 	Loaded a process at input/proc/p1s, PID: 3 PRIO: 0

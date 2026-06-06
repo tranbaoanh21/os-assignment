@@ -6,14 +6,14 @@ Time slot   1
 	Loaded a process at input/proc/s4, PID: 2 PRIO: 4
 Time slot   2
 Time slot   3
-	CPU 0: Put process  1 to run queue
-	CPU 0: Dispatched process  1
 	Loaded a process at input/proc/s1, PID: 3 PRIO: 0
-Time slot   4
-	Loaded a process at input/proc/m0s, PID: 4 PRIO: 3
 	CPU 0: Put process  1 to run queue
 	CPU 0: Dispatched process  3
+Time slot   4
+	Loaded a process at input/proc/m0s, PID: 4 PRIO: 3
 Time slot   5
+	CPU 0: Put process  3 to run queue
+	CPU 0: Dispatched process  3
 Time slot   6
 	Loaded a process at input/proc/s0, PID: 5 PRIO: 1
 Time slot   7
@@ -22,17 +22,17 @@ Time slot   7
 	Loaded a process at input/proc/s3, PID: 6 PRIO: 3
 Time slot   8
 Time slot   9
+	CPU 0: Put process  3 to run queue
+	CPU 0: Dispatched process  3
 	Loaded a process at input/proc/m1s, PID: 7 PRIO: 2
-	CPU 0: Put process  3 to run queue
-	CPU 0: Dispatched process  3
 Time slot  10
-	Loaded a process at input/proc/s2, PID: 8 PRIO: 3
-Time slot  11
-	CPU 0: Put process  3 to run queue
-	CPU 0: Dispatched process  3
-Time slot  12
 	CPU 0: Processed  3 has finished
 MM64 pid=3 va=0x0 indexes=[0,0,0,0,0] walks=0 accesses=0 bytes=20480
+	CPU 0: Dispatched process  5
+	Loaded a process at input/proc/s2, PID: 8 PRIO: 3
+Time slot  11
+Time slot  12
+	CPU 0: Put process  5 to run queue
 	CPU 0: Dispatched process  5
 Time slot  13
 Time slot  14
@@ -59,44 +59,44 @@ Time slot  24
 	CPU 0: Put process  5 to run queue
 	CPU 0: Dispatched process  5
 Time slot  25
-Time slot  26
-	CPU 0: Put process  5 to run queue
-	CPU 0: Dispatched process  5
-Time slot  27
 	CPU 0: Processed  5 has finished
 MM64 pid=5 va=0x0 indexes=[0,0,0,0,0] walks=0 accesses=0 bytes=20480
 	CPU 0: Dispatched process  1
+Time slot  26
+Time slot  27
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  7
+MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
 Time slot  28
+MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
 Time slot  29
-	CPU 0: Put process  1 to run queue
-	CPU 0: Dispatched process  7
-MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
+	CPU 0: Put process  7 to run queue
+	CPU 0: Dispatched process  1
 Time slot  30
-MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
 Time slot  31
-	CPU 0: Put process  7 to run queue
-	CPU 0: Dispatched process  1
-Time slot  32
-Time slot  33
 	CPU 0: Put process  1 to run queue
 	CPU 0: Dispatched process  7
 MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
-Time slot  34
+Time slot  32
 MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
-Time slot  35
+Time slot  33
 	CPU 0: Put process  7 to run queue
 	CPU 0: Dispatched process  1
-Time slot  36
-Time slot  37
-	CPU 0: Processed  1 has finished
-MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=0 accesses=0 bytes=20480
+Time slot  34
+Time slot  35
+	CPU 0: Put process  1 to run queue
 	CPU 0: Dispatched process  7
 MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
-Time slot  38
+Time slot  36
 MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
-Time slot  39
+Time slot  37
 	CPU 0: Processed  7 has finished
 MM64 pid=7 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
+	CPU 0: Dispatched process  1
+Time slot  38
+Time slot  39
+	CPU 0: Processed  1 has finished
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=0 accesses=0 bytes=20480
 	CPU 0: Dispatched process  4
 MM64 pid=4 va=0x0 indexes=[0,0,0,0,0] walks=2 accesses=10 bytes=20480
 Time slot  40
