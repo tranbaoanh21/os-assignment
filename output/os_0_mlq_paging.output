@@ -32,10 +32,10 @@ MM64 pid=4 va=0x0 indexes=[0,0,0,0,0] walks=4 accesses=20 bytes=20480
 Time slot  12
 MM64 pid=4 va=0x0 indexes=[0,0,0,0,0] walks=4 accesses=20 bytes=20480
 Time slot  13
+MM64 pid=4 va=0x0 indexes=[0,0,0,0,0] walks=6 accesses=30 bytes=20480
 	CPU 0: Put process  3 to run queue
 	CPU 0: Dispatched process  1
 MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=8 accesses=40 bytes=20480
-MM64 pid=4 va=0x0 indexes=[0,0,0,0,0] walks=6 accesses=30 bytes=20480
 Time slot  14
 	CPU 1: Put process  4 to run queue
 	CPU 1: Dispatched process  3

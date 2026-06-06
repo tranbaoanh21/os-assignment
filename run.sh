@@ -19,7 +19,8 @@ for test in \
   sched_0 \
   sched_1 \
   sched_prio \
-  sched_out_of_slot
+  sched_out_of_slot \
+  sched_2_cpu
 do
   echo "Running $test"
   ./os "$test" > "output/$test.output"
