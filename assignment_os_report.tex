@@ -1,7 +1,7 @@
+% !TEX program = lualatex
 \documentclass[12pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T5]{fontenc}
-\usepackage[vietnamese,english]{babel}
+\usepackage{fontspec}
+\usepackage[english]{babel}
 \usepackage{geometry}
 \usepackage{booktabs}
 \usepackage{array}
@@ -192,7 +192,6 @@ Test này thể hiện rõ cách xử lí song song trong bộ lập lịch dùn
         \bottomrule
     \end{tabular}
 \end{table}
-% chỗ này sửa sao cho nó nằm dưới bảng nha
 Cơ chế khóa đồng bộ pthread\_mutex\_lock đã bảo vệ nghiêm ngặt vùng nhớ dùng chung, tối đa 2 CPU bốc 2 tiến trình khác nhau, hoàn toàn không xảy ra xung đột Race Condition hay tranh chấp làm hỏng struct dữ liệu. Tại mốc thời gian 15, cả $s2$ và $s1$ cùng chạm vạch đích và giải phóng bộ nhớ cùng một lúc, để lại $s0$ một mình hoàn thành nốt chặng đường còn lại.
 
 \begin{figure}[htbp]

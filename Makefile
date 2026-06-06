@@ -26,6 +26,10 @@ HEADER = $(wildcard $(INCLUDE)/*.h)
 all: os
 #mem sched os
 
+report:
+	TEXMFVAR=/tmp/ossim-texmf-var TEXMFCONFIG=/tmp/ossim-texmf-config XDG_CACHE_HOME=/tmp/ossim-cache \
+	latexmk -lualatex -interaction=nonstopmode -halt-on-error assignment_os_report.tex
+
 # Compatibility binaries use the complete simulator because CPU instructions
 # now enter memory management through the unified syscall layer.
 mem: os

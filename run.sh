@@ -1,6 +1,10 @@
 #!/bin/sh
 set -eu
 
+export MPLBACKEND=Agg
+export MPLCONFIGDIR="${TMPDIR:-/tmp}/ossim-matplotlib"
+export XDG_CACHE_HOME="${TMPDIR:-/tmp}/ossim-cache"
+
 for test in \
   os_0_mlq_paging \
   os_1_mlq_paging \
@@ -24,5 +28,9 @@ for test in \
 do
   echo "Running $test"
   ./os "$test" > "output/$test.output"
-  python3 gantt.py "input/$test" "output/$test.output" "output_img/$test.png"
+done
+
+for test in sched_prio sched_out_of_slot sched_2_cpu
+do
+  python3 gantt.py "input/$test" "output/$test.output" "assets/$test.png"
 done
