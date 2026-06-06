@@ -9,6 +9,8 @@
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{amsmath}
+\usepackage{graphicx}
 \geometry{margin=2.2cm}
 \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
 \lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single}
@@ -76,28 +78,136 @@ double-free hoặc data corruption. Implementation dùng \texttt{queue\_lock} ch
 scheduler và mutex cho frame allocator cùng các thao tác cập phát memory.
 
 \section{CPU Scheduling}
-Scheduler duy trì 140 MLQ ready queues. Hàm \texttt{get\_mlq\_proc()} duyệt từ
-priority 0 đến 139, lấy FIFO process đầu queue và giảm slot của mức đó.
-\texttt{running\_list} là danh sách, vì vậy process được xóa bằng
-\texttt{purgequeue()} trước khi enqueue trở lại.
+Mục tiêu của phần này là mô phỏng bộ lập lịch CPU cho một hệ điều hành đa nhiệm dựa trên chính sách \textbf{Multi-Level Queue - MLQ} kết hợp cơ chế quản lý slot thời gian. Hệ thống hỗ trợ đa xử lý đối xứng (SMP) với nhiều lõi CPU ảo chạy đồng thời, có tính preemptive khi có tiến trình ưu tiên cao hơn xuất hiện.
+\subsection{Nguyên lý vận hành và cơ chế slot trong MLQ}
+\begin{itemize}
+    \item Hệ thống quản lý tối đa $MAX\_PRIO = 140$ mức độ ưu tiên. Mỗi hàng đợi tương ứng với một mức ưu tiên cố định, giá trị độ ưu tiên càng nhỏ thì mức độ ưu tiên thực thi càng cao. 
+    \item Để tránh hiện tượng \textit{starvation}, mỗi hàng đợi được cấp một số lượng slot giới hạn sử dụng CPU liên tiếp trong một chu kỳ điều phối theo công thức:
+        \begin{equation}
+            \text{slot}[\text{prio}] = MAX\_PRIO - \text{prio}
+        \end{equation}
+    \item Bộ lập lịch sẽ duyệt hàng đợi từ mức ưu tiên cao nhất xuống thấp nhất ($0 \rightarrow 139$). Khi tiến trình được chọn, nó thực thi tối đa trong một khoảng thời gian $time\_slice$.
+    \item Nếu hàng đợi hết slot hoặc trống, hệ thống chuyển xuống hàng đợi tiếp theo. Khi tất cả các hàng đợi có tiến trình đều đã cạn kiệt slot, hệ thống kích hoạt cơ chế \textbf{Reset Slot} toàn cục để nạp lại giá trị ban đầu cho mảng slot.
+\end{itemize}
+\subsection{Kết quả từ các testcase nhóm tự tạo}
+\subsubsection{Kiểm thử độ ưu tiên và ngắt cưỡng bức (sched\_prio)}
+\begin{lstlisting}[language=Verilog, caption={Input cho sched\_prio}]
+2 1 2 
+0 s0 1
+1 s1 0
+\end{lstlisting}
+\textbf{Chú thích:} $time\_slice = 2$, thực thi trên 1 CPU, cấu hình chi tiết của 2 tiến trình bao gồm:
 
-\subsection{Gantt diagram minh họa}
-Với test \texttt{sched\_0}, time slice bằng 2 và một CPU, phần đầu lịch chạy có
-dạng:
-
-\begin{center}
-\begin{tabular}{c|ccccccccc}
-\toprule
-Slot & 1--2 & 3--4 & 5--6 & 7--8 & 9--10 & 11--12 & 13--14 & 15--16 & 17--18\\
-\midrule
-Process & P1 & P2 & P3 & P4 & P3 & P4 & P3 & P4 & P3\\
-Priority & 4 & 4 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-\bottomrule
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c|c|c}
+PID & Arrival & Burst & Priority \\
+\hline
+1 & 0 & 15 & 1 \\
+2 & 1 & 7 & 0 \\
 \end{tabular}
-\end{center}
+\caption{Các process trong sched\_prio}
+\end{table}
 
-Khi P3 và P4 priority 0 xuất hiện, chúng được chọn trước P1 và P2 priority 4.
-Các process cùng priority luân phiên FIFO.
+Khi $s0$ đang thực thi dở dang chu kỳ lệnh của mình tại đầu Time slot 2, tiến trình $s1$ với độ ưu tiên cao hơn ($PRIO = 0$) xuất hiện trong hàng đợi. Tại đầu Time slot 3, ngay khi kết thúc quantum thời gian của $s0$, bộ lập lịch thực hiện ngắt cưỡng bức đưa $s0$ về trạng thái chờ và nhường quyền chiếm dụng CPU cho $s1$. Sau khi $s1$ hoàn thành toàn bộ công việc ở Time slot 10, $s0$ mới quay lại thực thi nốt phần Burst Time còn lại.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/sched\_prio.png}
+    \caption{Biểu đồ Gantt kết quả cho test sched\_prio}
+    \label{fig:sched_prio}
+\end{figure}
+
+Kết quả từ biểu đồ Gantt ở trên cho thấy cơ chế ngắt cưỡng bức hoạt động vô cùng chính xác tại thời điểm giao thoa giữa các $time\_slice$. Luồng CPU không bị chiếm dụng vô thời hạn bởi tiến trình có độ ưu tiên thấp hơn khi có một tiến trình mang độ ưu tiên cao hơn sẵn sàng trong hệ thống. Đồng thời, log nạp tiến trình bất đồng bộ phản ánh đúng quan hệ song song giữa luồng CPU và luồng Loader.
+
+\subsubsection{Kiểm thử hết slot chu kỳ (sched\_out\_of\_slot)}
+\begin{lstlisting}[language=Verilog, caption={Input cho sched\_out\_of\_slot}]
+2 1 3
+0 s0 139
+1 s1 138
+2 s2 137
+\end{lstlisting}
+\textbf{Chú thích:} time slice = 2, thực thi trên 1 CPU, cấu hình chi tiết của 3 tiến trình bao gồm:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c|c|c}
+PID & Arrival & Burst & Priority \\
+\hline
+1 & 0 & 15 & 139 \\
+2 & 1 & 7 & 138 \\
+3 & 2 & 12 & 137
+\end{tabular}
+\caption{Các process trong sched\_out\_of\_slot}
+\end{table}
+
+Theo công thức phân bổ, số slot ban đầu được cấp lần lượt cho các hàng đợi là: $\text{slot}[137] = 3$, $\text{slot}[138] = 2$, và $\text{slot}[139] = 1$. Tiến trình $s0$ thực thi đầu tiên và tiêu thụ hết 1 slot của `Queue[139]`. Tại đầu Time slot 3, $s2$ xuất hiện và chiếm quyền thực thi nhờ độ ưu tiên cao nhất ($PRIO = 137$). Tiến trình $s2$ thực thi liên tục 3 \textit{quantum} liên tiếp từ Time slot 3 đến đầu Time slot 9, làm cạn kiệt hoàn toàn 3 slot của `Queue[137]`.
+
+Tại đầu Time slot 9, hệ thống luân chuyển quyền điều phối xuống cho tiến trình $s1$ thuộc hàng đợi kế tiếp. Tiến trình $s1$ thực thi tiêu tốn hết 2 slot từ Time slot 9 đến đầu Time slot 13. Lúc này, toàn bộ các tiến trình đang tồn tại đều đã sử dụng sạch các slot được cấp, hệ thống lập tức kích hoạt cơ chế \textbf{Reset Slot} toàn cục để nạp lại giá trị ban đầu, đưa $s2$ trở lại thực thi và giải phóng bộ nhớ ảo động (\textit{MM64 dump}) khi kết thúc. Kịch bản này chứng minh logic chuyển đổi trạng thái (\textit{Stateful transition}) của bộ lập lịch hoạt động hoàn toàn chính xác theo đặc tả hệ thống.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/sched\_out\_of\_slot.png}
+    \caption{Biểu đồ Gantt kết quả cho test sched\_out\_of\_slot}
+    \label{fig:sched_out_of_slot}
+\end{figure}
+
+Kết quả từ biểu đồ Gantt ở trên cho thấy bộ lập lịch đã thực hiện việc theo dõi và khấu trừ giá trị `slot` của từng hàng đợi một cách hiệu quả. Hiện tượng một tiến trình có độ ưu tiên cao chạy liên tục đúng số lần giới hạn rồi nhường quyền, và chu kỳ reset nạp lại năng lượng diễn ra tự động khi toàn bộ các hàng đợi cạn kiệt slot là minh chứng rõ nét cho thuật toán lập lịch MLQ được hiện thực hóa một cách chính xác.
+
+\subsubsection{Kiểm thử đa xử lí song song trên 2 CPU (sched\_2\_cpu)}
+\begin{lstlisting}[language=Verilog, caption={Input cho sched\_out\_of\_slot}]
+2 2 3
+0 s0 138
+0 s1 138
+1 s2 137
+\end{lstlisting}
+
+\textbf{Chú thích:} time slice = 2, thực thi trên 2 CPUs, cấu hình chi tiết của 3 tiến trình bao gồm:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c|c|c}
+PID & Arrival & Burst & Priority \\
+\hline
+1 & 0 & 15 & 138 \\
+2 & 0 & 7 & 138 \\
+3 & 1 & 12 & 137
+\end{tabular}
+\caption{Các process trong sched\_2\_cpu}
+\end{table}
+
+Test này thể hiện rõ cách xử lí song song trong bộ lập lịch dùng 2 CPU:
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \caption{Bảng phân tích điều phối dòng thời gian trên 2 CPU}
+    \begin{tabular}{ccl}
+        \toprule
+        Thời gian (t) & CPU xử lý & Trạng thái điều phối và Chiếm dụng tài nguyên \\
+        \midrule
+        $1 \rightarrow 3$ & CPU 0 & Điều phối tiến trình $s0$ (PID 1) chạy trọn vẹn 1 Quantum. \\
+        $2 \rightarrow 4$ & CPU 1 & Điều phối song song tiến trình $s1$ (PID 2) chạy đồng thời. \\
+        $3 \rightarrow 15$ & CPU 0 & Ngắt $s0$, bốc siêu VIP $s2$ (PID 3) chạy liên tục qua các đợt reset slot. \\
+        $4 \rightarrow 15$ & CPU 1 & Luân phiên điều phối luân hồi Round Robin giữa $s0$ và $s1$. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+% chỗ này sửa sao cho nó nằm dưới bảng nha
+Cơ chế khóa đồng bộ pthread\_mutex\_lock đã bảo vệ nghiêm ngặt vùng nhớ dùng chung, tối đa 2 CPU bốc 2 tiến trình khác nhau, hoàn toàn không xảy ra xung đột Race Condition hay tranh chấp làm hỏng struct dữ liệu. Tại mốc thời gian 15, cả $s2$ và $s1$ cùng chạm vạch đích và giải phóng bộ nhớ cùng một lúc, để lại $s0$ một mình hoàn thành nốt chặng đường còn lại.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/sched\_2\_cpu.png}
+    \caption{Biểu đồ trực quan Gantt chạy thực tế trên hệ thống 2 CPU (sched\_2\_cpu)}
+    \label{fig:sched_2_cpu}
+\end{figure}
+Kết quả từ biểu đồ Gantt ở trên cho thấy tính đúng đắn của giải thuật lập lịch đa lõi đối xứng. Hệ thống phân phối tối đa 2 tác vụ chạy song song trên 2 lõi độc lập, đảm bảo hiệu suất nạp tải của bộ vi xử lý phần cứng ảo mà không gây ra bất kỳ trạng thái Deadlock hay tranh chấp đọc/ghi nào trên cấu trúc dữ liệu hàng đợi dùng chung nhờ cơ chế loại trừ tương hỗ.
+
+\subsection{Kết luận}
+Qua quá trình triển khai cấu trúc dữ liệu mảng và kiểm thử thông qua các kịch bản thực nghiệm từ đơn giản đến phức tạp, module bộ lập lịch CPU dựa trên chính sách Multi-Level Queue đã chứng minh được tính ổn định và chính xác cao. 
+
+Kết quả thu được hoàn toàn tương thích và trùng khớp với các mẫu log đầu ra chuẩn được cung cấp trong cấu trúc mã nguồn của đồ án hệ thống. Cơ chế tính toán khấu trừ slot linh hoạt giúp tối ưu hóa hiệu năng, giảm thiểu tối đa hiện tượng starvation của các tiến trình có độ ưu tiên thấp , đồng thời cơ chế khóa đồng bộ hóa đảm bảo hệ thống bảo toàn tính nhất quán tuyệt đối trong môi trường xử lý đa luồng đa lõi song song.
+
 
 \section{System Call và phân tách User/Kernel}
 Các memory library wrapper ở user side chỉ dùng PCB để lấy PID và kernel handle,
