@@ -21,6 +21,7 @@ for test in \
   os_cross_pid_protection \
   os_mem_reuse \
   os_mem_roundtrip \
+  os_mem_roundtrip_spec \
   os_mem_protection \
   sched \
   sched_0 \

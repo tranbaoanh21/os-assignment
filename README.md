@@ -6,7 +6,8 @@ Mo phong he dieu hanh cho bai tap lon CO2018, gom:
 - Unified system-call dispatcher; kernel lookup PCB bang PID.
 - User/kernel memory protection.
 - Paging 64-bit nam cap cap dong voi low/high canonical-address validation.
-- Paging statistics va 22 testcase co semantic assertions.
+- Paging statistics va 23 testcase co semantic assertions, bao gom testcase
+  tuong thich cu phap copy user/kernel trong dac ta.
 
 ## Quick start
 

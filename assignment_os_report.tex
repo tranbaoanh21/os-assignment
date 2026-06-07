@@ -964,6 +964,11 @@ thừa hai; thay vào đó nó tìm trực tiếp một chuỗi frame liên ti�
 \code{copy_from_user} và \code{copy_to_user} sao chép từng byte qua các helper có
 kiểm tra region. Kernel không dereference trực tiếp một user pointer tùy ý. Cách làm này
 an toàn hơn về ownership, dù chi phí cao do lặp từng byte và nhiều lần page-table walk.
+Parser hỗ trợ cú pháp trong đặc tả:
+\code{copy_from_user source destination} và
+\code{copy_to_user source destination offset}, với kích thước mặc định một byte.
+Dạng mở rộng có thêm \code{offset}/\code{size} vẫn được giữ để kiểm thử sao chép
+nhiều byte.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.96\textwidth]{assets/evidence_roundtrip.jpg}
@@ -1390,7 +1395,7 @@ Test & Thành phần & Mục tiêu\\
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.48\textwidth]{assets/evidence_all_tests.jpg}
-\caption{Output thực tế của 22 testcase và semantic assertions}
+\caption{Output thực tế của bộ testcase và semantic assertions}
 \label{fig:evidence-all-tests}
 \end{figure}
 Hình~\ref{fig:evidence-all-tests} cho thấy toàn bộ cấu hình trong \code{run.sh} đã được
@@ -1543,7 +1548,7 @@ giới hạn optional thay vì được trình bày như chức năng đã hoàn
 Bài tập đã tích hợp loader, MLQ scheduler nhiều CPU, timer, syscall, quản lý region,
 frame và page table trong một simulator thống nhất. Implementation duy trì ranh giới
 user/kernel bằng PID lookup và frame ownership; hỗ trợ canonical validation, sparse
-page-table walk năm cấp cùng thống kê access/storage. Kết quả build, 22 testcase và
+page-table walk năm cấp cùng thống kê access/storage. Kết quả build, 23 testcase và
 semantic assertions đều thành công, cung cấp bằng chứng cho scheduler, protection,
 data-region reuse, syscall, sparse paging và round-trip memory.
 

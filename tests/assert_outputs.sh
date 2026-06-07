@@ -44,6 +44,9 @@ assert_contains output/os_mm64_canonical.output \
 assert_contains output/os_mem_roundtrip.output \
   "MEM read PID 1 region 3 offset 0 value 65" \
   "user-kernel-user copy must preserve the byte value"
+assert_contains output/os_mem_roundtrip_spec.output \
+  "MEM read PID 1 region 3 offset 0 value 65" \
+  "spec-form copy instructions must preserve the byte value"
 assert_contains output/os_syscall_list.output "0-sys_listsyscall" \
   "syscall table must include listsyscall"
 assert_contains output/os_syscall_list.output "17-sys_memmap" \

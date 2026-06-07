@@ -1,0 +1,8 @@
+20 7
+alloc 16 1
+write 65 1 0
+copy_from_user 1 2
+alloc 16 3
+copy_to_user 2 3 0
+read 3 0 4
+calc

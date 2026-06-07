@@ -67,8 +67,9 @@ struct pcb_t * load(const char * path) {
 	char opcode[64];
 	proc->code = (struct code_seg_t*)malloc(sizeof(struct code_seg_t));
 	fscanf(file, "%u %u", &proc->priority, &proc->code->size);
-	proc->code->text = (struct inst_t*)malloc(
-		sizeof(struct inst_t) * proc->code->size
+	proc->code->text = (struct inst_t*)calloc(
+		proc->code->size,
+		sizeof(struct inst_t)
 	);
 	uint32_t i = 0;
 	char buf[200];
@@ -103,14 +104,49 @@ struct pcb_t * load(const char * path) {
 			);
 			break;	
 		case COPY_FROM_USER:
+			fgets(buf, sizeof(buf), file);
+			{
+				int argc = sscanf(buf, "" FORMAT_ARG "" FORMAT_ARG "" FORMAT_ARG "" FORMAT_ARG "",
+					&proc->code->text[i].arg_0,
+					&proc->code->text[i].arg_1,
+					&proc->code->text[i].arg_2,
+					&proc->code->text[i].arg_3
+				);
+				if (argc == 2) {
+					/* Specification form: source destination. */
+					proc->code->text[i].arg_2 = 0;
+					proc->code->text[i].arg_3 = 1;
+				} else if (argc != 4) {
+					printf("Invalid copy_from_user arguments in '%s'\n", path);
+					exit(1);
+				}
+			}
+			break;
 		case COPY_TO_USER:
+			fgets(buf, sizeof(buf), file);
+			{
+				int argc = sscanf(buf, "" FORMAT_ARG "" FORMAT_ARG "" FORMAT_ARG "" FORMAT_ARG "",
+					&proc->code->text[i].arg_0,
+					&proc->code->text[i].arg_1,
+					&proc->code->text[i].arg_2,
+					&proc->code->text[i].arg_3
+				);
+				if (argc == 3) {
+					/* Specification form: source destination offset. */
+					proc->code->text[i].arg_3 = 1;
+				} else if (argc != 4) {
+					printf("Invalid copy_to_user arguments in '%s'\n", path);
+					exit(1);
+				}
+			}
+			break;
 		case SYSCALL:
 			fgets(buf, sizeof(buf), file);
 			sscanf(buf, "" FORMAT_ARG "" FORMAT_ARG "" FORMAT_ARG "" FORMAT_ARG "",
-			           &proc->code->text[i].arg_0,
-			           &proc->code->text[i].arg_1,
-			           &proc->code->text[i].arg_2,
-			           &proc->code->text[i].arg_3
+				&proc->code->text[i].arg_0,
+				&proc->code->text[i].arg_1,
+				&proc->code->text[i].arg_2,
+				&proc->code->text[i].arg_3
 			);
 			break;
 		default:
@@ -121,4 +157,3 @@ struct pcb_t * load(const char * path) {
 	fclose(file);
 	return proc;
 }
-
