@@ -142,41 +142,64 @@
 \AddToShipoutPictureBG*{%
   \AtPageLowerLeft{%
     \begin{tikzpicture}[remember picture,overlay]
-      \draw[blue!65!black,line width=1.2pt]
-        ([xshift=1.25cm,yshift=1.25cm]current page.south west)
+      \draw[blue!75!black,line width=3.2pt]
+        ([xshift=1.55cm,yshift=1.45cm]current page.south west)
         rectangle
-        ([xshift=-1.25cm,yshift=-1.25cm]current page.north east);
-      \draw[blue!25,line width=0.45pt]
-        ([xshift=1.42cm,yshift=1.42cm]current page.south west)
+        ([xshift=-1.55cm,yshift=-1.45cm]current page.north east);
+      \draw[black!65,line width=0.35pt]
+        ([xshift=1.82cm,yshift=1.12cm]current page.south west)
         rectangle
-        ([xshift=-1.42cm,yshift=-1.42cm]current page.north east);
+        ([xshift=-1.82cm,yshift=-1.12cm]current page.north east);
+      \draw[black!65,line width=0.35pt]
+        ([xshift=1.28cm,yshift=1.78cm]current page.south west)
+        rectangle
+        ([xshift=-1.28cm,yshift=-1.78cm]current page.north east);
     \end{tikzpicture}%
   }%
 }
 \centering
-\textbf{\large ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH}\\
-\textbf{\large TRƯỜNG ĐẠI HỌC BÁCH KHOA}\\
-\textbf{\large KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH}\\
-\rule{6cm}{0.8pt}
+\vspace*{0.45cm}
+{\fontsize{16pt}{20pt}\selectfont
+ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH\\
+TRƯỜNG ĐẠI HỌC BÁCH KHOA\\[3pt]
+\bfseries KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH\par}
 
-\vspace{0.7cm}
-\includegraphics[width=4cm]{logobkheader.png}
+\vspace{1.15cm}
+\includegraphics[width=4.6cm]{logobkheader.png}
 
-\vspace{0.7cm}
-{\fontsize{24pt}{28pt}\selectfont\bfseries BÁO CÁO BÀI TẬP LỚN}\\[0.5cm]
-{\LARGE\bfseries MÔN HỌC: HỆ ĐIỀU HÀNH -- CO2018}\\[0.8cm]
-\rule{11cm}{0.6pt}\\[0.8cm]
-{\LARGE\bfseries SIMPLE OPERATING SYSTEM}
+\vspace{0.85cm}
+{\fontsize{25pt}{30pt}\selectfont\bfseries BÁO CÁO\par}
+\vspace{0.35cm}
+{\fontsize{19pt}{23pt}\selectfont\bfseries
+BÀI TẬP LỚN HỆ ĐIỀU HÀNH -- CO2018\par}
 
-\vfill
-\begin{tabular}{>{\bfseries}p{4.5cm}p{8cm}}
-Nhóm thực hiện: & Nhóm sinh viên lớp L02\\
-Lớp: & L02\\
-Giảng viên hướng dẫn: & Thầy Mai Đức Trung\\
+\vspace{1cm}
+{\fontsize{17pt}{21pt}\selectfont\bfseries ĐỀ TÀI:\par}
+\vspace{0.25cm}
+{\fontsize{17pt}{21pt}\selectfont\bfseries
+SIMPLE OPERATING SYSTEM SIMULATION\par}
+
+\vspace{0.85cm}
+\begin{minipage}{12.5cm}
+\renewcommand{\arraystretch}{1.28}
+\begin{tabular}{@{}p{4.2cm}p{8cm}@{}}
+Giảng viên hướng dẫn: & Thầy Hoàng Lê Hải Thanh\\
+Lớp: & L08\\[4pt]
+Thành viên: &
+\begin{tabular}[t]{@{}p{2.2cm}l@{}}
+2410155 & Trần Nhật Bảo Anh\\
+2413707 & Nguyễn Quốc Trung\\
+2410297 & Trần Hoàng Quốc Bảo\\
+2410046 & Trịnh Quốc An\\
+2410841 & Nguyễn Trường Giang
 \end{tabular}
+\end{tabular}
+\end{minipage}
 
 \vfill
-\textbf{Thành phố Hồ Chí Minh, tháng 6 năm 2026}
+{\fontsize{14pt}{18pt}\selectfont
+TP. Hồ Chí Minh, tháng 06/2026}
+\vspace*{0.25cm}
 \end{titlepage}
 
 \newpage
@@ -232,11 +255,6 @@ kernel allocation, cache pool, kiểm tra quyền truy cập physical memory; v�
 page-table walk qua PGD, P4D, PUD, PMD, PT. Báo cáo trình bày thiết kế, đối chiếu mã
 nguồn, phân tích testcase, thống kê chi phí bảng trang và nêu rõ các giới hạn còn tồn tại.
 
-\notebox{\textbf{Phạm vi xác nhận.} Các kết luận trong báo cáo dựa trên mã nguồn và
-các testcase trong thư mục \code{input/}. Dynamic sparse page-table allocation được
-kiểm chứng ở branch PMD khác 0; các phép copy user--kernel được kiểm tra bằng giá trị
-đọc lại. Page replacement end-to-end vẫn được trình bày thận trọng vì chưa có testcase
-ép RAM cạn rồi xác nhận toàn bộ chu trình swap-out/swap-in.}
 
 \newpage
 \pagenumbering{arabic}
@@ -244,7 +262,7 @@ kiểm chứng ở branch PMD khác 0; các phép copy user--kernel được ki�
 \section{Giới thiệu và kiến trúc hệ thống}
 
 \subsection{Mục tiêu bài tập}
-Theo đặc tả, bài tập tập trung vào ba nhóm năng lực chính:
+Theo đặc tả, bài tập tập trung vào ba nhóm chính:
 \begin{itemize}
   \item xây dựng scheduler/dispatcher cho nhiều CPU theo chính sách Multi-Level Queue;
   \item quản lý memory từ virtual address đến physical frame, đồng thời phân tách
@@ -253,7 +271,7 @@ Theo đặc tả, bài tập tập trung vào ba nhóm năng lực chính:
         synchronization.
 \end{itemize}
 
-Ngoài ba nhóm trên, phiên bản đề năm 2026 yêu cầu mô phỏng địa chỉ dài 64-bit bằng
+Ngoài ba nhóm trên, đề yêu cầu mô phỏng địa chỉ dài 64-bit bằng
 multi-level paging, cung cấp \code{vmap_pgd_memset}, thống kê số lần truy cập bảng
 trang và dung lượng lưu trữ, đồng thời trả lời đầy đủ các câu hỏi lý thuyết.
 
@@ -261,22 +279,46 @@ trang và dung lượng lưu trữ, đồng thời trả lời đầy đủ các
 \begin{table}[H]
 \centering
 \caption{Ma trận yêu cầu, implementation và bằng chứng}
-\begin{tabularx}{\textwidth}{p{3.2cm}X X}
-\toprule
-Yêu cầu & Implementation chính & Bằng chứng kiểm thử / báo cáo\\
-\midrule
-Scheduling (3 điểm demo) & 140 MLQ queues, weighted slot, FIFO, \code{queue_lock} &
-\code{sched_prio}, \code{sched_out_of_slot}, \code{sched_2_cpu} và ba Gantt diagram\\
-MMU và user/kernel (2 điểm demo) & Syscall 17, PID lookup, region/frame ownership,
-kernel allocation & \code{os_mem_reuse}, \code{os_mem_roundtrip},
-\code{os_cross_pid_protection}\\
-Multi-level paging (2 điểm demo) & Canonical 57-bit, PGD--P4D--PUD--PMD--PT,
-sparse allocation, \code{vmap_pgd_memset} & \code{os_mm64_canonical}, thống kê
-\code{walks/accesses/bytes}\\
-Questionnaire và report (3 điểm) & Trả lời sáu câu hỏi trong đề; phân tích thiết kế,
-trade-off và giới hạn & Các mục ``Trả lời câu hỏi'', bảng kết quả, hình minh chứng và
-phân tích giới hạn\\
-\bottomrule
+\small
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|
+  >{\raggedright\arraybackslash\bfseries}p{2.7cm}|
+  >{\raggedright\arraybackslash}X|
+  >{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Yêu cầu} & \textbf{Implementation chính} &
+\textbf{Bằng chứng kiểm thử / báo cáo}\\
+\hline
+Scheduling &
+140 MLQ queues; weighted slot; FIFO trong từng queue; bảo vệ bằng
+\code{queue_lock}. &
+\begin{tabular}[t]{@{}l@{}}
+\code{sched_prio}\\
+\code{sched_out_of_slot}\\
+\code{sched_2_cpu} và ba Gantt diagram
+\end{tabular}\\
+\hline
+MMU và user/kernel &
+Syscall 17; PID lookup; kiểm tra quyền sở hữu region/frame; cấp phát kernel. &
+\begin{tabular}[t]{@{}l@{}}
+\code{os_mem_reuse}\\
+\code{os_mem_roundtrip}\\
+\code{os_cross_pid_protection}
+\end{tabular}\\
+\hline
+Multi-level paging &
+Canonical 57-bit; PGD--P4D--PUD--PMD--PT; sparse allocation;
+\code{vmap_pgd_memset}. &
+\begin{tabular}[t]{@{}l@{}}
+\code{os_mm64_canonical}\\
+Thống kê \code{walks}, \code{accesses}, \code{bytes}
+\end{tabular}\\
+\hline
+Questionnaire và report &
+Trả lời sáu câu hỏi; phân tích thiết kế, trade-off và giới hạn. &
+Các mục ``Trả lời câu hỏi''; bảng kết quả; hình minh chứng; phân tích giới hạn.\\
+\hline
 \end{tabularx}
 \label{tab:rubric-matrix}
 \end{table}
@@ -336,17 +378,22 @@ của slot đó.
 \begin{table}[H]
 \centering
 \caption{Vai trò của các cấu trúc dữ liệu chính}
-\begin{tabularx}{\textwidth}{>{\ttfamily}p{3.2cm}X X}
-\toprule
+\begin{tabularx}{\textwidth}{|>{\ttfamily}p{3.2cm}|X|X|}
+\hline
 Cấu trúc & Nội dung chính & Vai trò\\
-\midrule
+\hline
 pcb\_t & PID, priority, code, registers, PC, kernel handle, mm & Đại diện trạng thái của một process\\
+\hline
 krnl\_t & scheduler queues, RAM, swap, kernel page tables & Registry dùng chung phía kernel\\
+\hline
 queue\_t & Mảng con trỏ PCB và kích thước & Ready queue và running list\\
+\hline
 mm\_struct & page tables, VMA, region tables, cache pools, thống kê & Address space riêng của process\\
+\hline
 vm\_area\_struct & vm\_start, vm\_end, sbrk, free-region list & Miền địa chỉ ảo liên tục\\
+\hline
 memphy\_struct & storage, size, free frame list & Thiết bị RAM hoặc SWAP mô phỏng\\
-\bottomrule
+\hline
 \end{tabularx}
 \label{tab:core-structures}
 \end{table}
@@ -370,18 +417,24 @@ hiện tại hỗ trợ các instruction trong Bảng~\ref{tab:instructions}.
 \begin{table}[H]
 \centering
 \caption{Instruction set của simulator}
-\begin{tabularx}{\textwidth}{p{3.1cm}p{4.2cm}X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{3.1cm}|p{4.2cm}|X|}
+\hline
 Instruction & Cú pháp rút gọn & Ý nghĩa\\
-\midrule
+\hline
 CALC & \code{calc} & Tiêu thụ một CPU instruction\\
+\hline
 ALLOC / FREE & \code{alloc size rgid}, \code{free rgid} & Cấp phát và trả user region\\
+\hline
 READ / WRITE & \code{read src off dst}, \code{write val dst off} & Truy cập user memory\\
+\hline
 KMALLOC & \code{kmalloc size rgid} & Cấp kernel region có frame liên tiếp\\
+\hline
 KMEM CACHE & create / alloc & Tạo pool và cấp object cùng kích thước\\
+\hline
 COPY & from-user / to-user & Sao chép qua ranh giới user/kernel\\
+\hline
 SYSCALL & \code{syscall nr a1 a2 a3} & Gọi syscall number tương ứng\\
-\bottomrule
+\hline
 \end{tabularx}
 \label{tab:instructions}
 \end{table}
@@ -563,16 +616,20 @@ preemption ở biên quantum, không phải preemption giữa một instruction.
 \begin{table}[H]
 \centering
 \caption{Các mốc quan trọng của sched-prio}
-\begin{tabularx}{\textwidth}{p{2.4cm}p{3cm}X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{2.4cm}|p{3cm}|X|}
+\hline
 Time slot & Event & Phân tích\\
-\midrule
+\hline
 0--1 & PID 1, priority 1 được nạp và dispatch & Tại thời điểm đầu chỉ có PID 1 sẵn sàng\\
+\hline
 1 & PID 2, priority 0 được nạp & PID 1 vẫn hoàn thành quantum hiện tại\\
+\hline
 3 & PID 1 được put; PID 2 dispatch & Scheduler chọn priority 0 tại biên quantum\\
+\hline
 3--18 & PID 2 tiếp tục được chọn & Queue priority 0 còn slot và có mức ưu tiên cao nhất\\
+\hline
 18 & PID 2 hoàn thành; PID 1 quay lại & Process thấp hơn không bị mất, chỉ phải chờ\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
@@ -592,15 +649,18 @@ không còn slot khả dụng, toàn bộ ngân sách được reset.
 \begin{table}[H]
 \centering
 \caption{Phân bổ slot trong sched-out-of-slot}
-\begin{tabular}{cccc}
-\toprule
+\begin{tabular}{|c|c|c|c|}
+\hline
 Priority & Ngân sách & Khoảng chạy đầu tiên & Lý do chuyển queue\\
-\midrule
+\hline
 139 & 1 & slot 1--3 & Dùng hết một slot\\
+\hline
 137 & 3 & slot 3--9 & Dùng hết ba slot\\
+\hline
 138 & 2 & slot 9--13 & Dùng hết hai slot\\
+\hline
 137 & reset & từ slot 13 & Tất cả queue khả dụng đã hết ngân sách\\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -620,15 +680,18 @@ lúc, mỗi process tuân thủ quantum, và process mới được chọn từ 
 \begin{table}[H]
 \centering
 \caption{Một số bất biến quan sát được trong sched-2-CPU}
-\begin{tabularx}{\textwidth}{p{4cm}X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{4cm}|X|}
+\hline
 Bất biến & Bằng chứng từ log\\
-\midrule
+\hline
 Không dispatch cùng PID cho hai CPU & Mỗi thời điểm CPU 0 và CPU 1 nhận PID khác nhau\\
+\hline
 Process ưu tiên cao được chọn sớm & PID 3 priority 137 được CPU 1 lấy ngay sau khi PID 1 hết quantum\\
+\hline
 Quantum được tôn trọng & Các dòng ``Put process'' xuất hiện ở biên hai time slot\\
+\hline
 CPU tiếp tục khi CPU khác rảnh/dừng & Sau khi PID 2 và PID 3 hoàn tất, CPU 0 tiếp tục PID 1\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
@@ -655,15 +718,18 @@ ra, \code{queue_empty()} đọc queue mà không lấy \code{queue_lock}; hàm n
 \begin{table}[H]
 \centering
 \caption{Chi phí của các thao tác scheduler chính}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{2.7cm}X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{2.7cm}|X|}
+\hline
 Thao tác & Độ phức tạp & Nhận xét\\
-\midrule
+\hline
 \code{enqueue()} & $O(1)$ & Ghi PCB vào cuối mảng queue\\
+\hline
 \code{dequeue()} & $O(n)$ & Dịch các phần tử còn lại sang trái\\
+\hline
 Chọn MLQ process & $O(140+n)$ & Quét tối đa 140 queue rồi dequeue bucket được chọn\\
+\hline
 Tra cứu PID & $O(P+140)$ & Duyệt process trong các queue dưới lock\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 Với quy mô bài tập, mảng queue giúp implementation trực quan và dễ kiểm chứng. Trong hệ
@@ -749,17 +815,22 @@ Bảng~\ref{tab:pte-layout}.
 \begin{table}[H]
 \centering
 \caption{Các trường quan trọng của PTE}
-\begin{tabularx}{\textwidth}{p{2.8cm}p{2.5cm}X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{2.8cm}|p{2.5cm}|X|}
+\hline
 Trường & Bit & Ý nghĩa\\
-\midrule
+\hline
 FPN & 0--12 & Frame number khi page đang ở RAM\\
+\hline
 SWPTYP & 0--4 & Loại swap device khi page được swap\\
+\hline
 SWPOFF & 5--25 & Frame/offset trên swap device\\
+\hline
 DIRTY & 28 & Page đã bị thay đổi\\
+\hline
 SWAPPED & 30 & PTE mô tả page trên swap\\
+\hline
 PRESENT & 31 & PTE hợp lệ/đã được thiết lập theo framework\\
-\bottomrule
+\hline
 \end{tabularx}
 \label{tab:pte-layout}
 \end{table}
@@ -923,21 +994,25 @@ Mục~\ref{sec:swap-evaluation}.
 \begin{table}[H]
 \centering
 \caption{Bất biến quan trọng của quản lý bộ nhớ}
-\begin{tabularx}{\textwidth}{p{4cm}X X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{4cm}|X|X|}
+\hline
 Bất biến & Cơ chế duy trì & Bằng chứng\\
-\midrule
+\hline
 Region hợp lệ nằm trong VMA & Kiểm tra \code{rgid}, ranh giới và overlap &
 \code{os_mem_reuse}\\
+\hline
 Frame chỉ thuộc process được map & Duyệt page table trước raw physical I/O &
 \code{os_cross_pid_protection}\\
+\hline
 User pointer không được kernel dereference trực tiếp & Copy qua helper có kiểm tra
 region & \code{os_mem_roundtrip}\\
+\hline
 PTE swapped không đồng thời PRESENT & Helper đổi trạng thái clear bit PRESENT &
 Phân tích source và trạng thái PTE\\
+\hline
 Page-table tree được thu hồi khi process kết thúc & Duyệt và giải phóng đệ quy &
 Các test tích hợp kết thúc không crash\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 Memory API trả lỗi sớm khi region ID không hợp lệ, offset vượt biên, địa chỉ không
@@ -950,17 +1025,21 @@ tiếp tục cấp phát.
 \begin{table}[H]
 \centering
 \caption{So sánh paging và continuous allocation}
-\begin{tabularx}{\textwidth}{p{3.4cm}X X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{3.4cm}|X|X|}
+\hline
 Tiêu chí & Paging & Continuous allocation\\
-\midrule
+\hline
 Fragmentation & Loại bỏ external fragmentation, có internal fragmentation ở page cuối &
 Dễ external fragmentation\\
+\hline
 Dịch địa chỉ & Cần page table và nhiều memory access & Đơn giản với base/limit\\
+\hline
 Cấp vùng lớn & Không cần frame liên tiếp & Phải tìm block liên tiếp\\
+\hline
 Protection & Có thể đặt quyền theo page & Thường đặt quyền theo cả segment/block\\
+\hline
 Swapping & Có thể swap từng page & Thường phải di chuyển vùng lớn\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
@@ -989,17 +1068,22 @@ bit tạo thành:
 \begin{table}[H]
 \centering
 \caption{Phân chia bit của địa chỉ 57-bit}
-\begin{tabular}{lccc}
-\toprule
+\begin{tabular}{|l|c|c|c|}
+\hline
 Cấp & Dải bit & Số entry & Dung lượng một bảng\\
-\midrule
+\hline
 PGD & 56--48 & 512 & 4096 byte\\
+\hline
 P4D & 47--39 & 512 & 4096 byte\\
+\hline
 PUD & 38--30 & 512 & 4096 byte\\
+\hline
 PMD & 29--21 & 512 & 4096 byte\\
+\hline
 PT  & 20--12 & 512 & 4096 byte\\
+\hline
 Offset & 11--0 & 4096 vị trí & --\\
-\bottomrule
+\hline
 \end{tabular}
 \label{tab:address-bits}
 \end{table}
@@ -1095,15 +1179,18 @@ thước toàn bộ virtual address space:
 \begin{table}[H]
 \centering
 \caption{Dung lượng page table theo các mapping quan sát được}
-\begin{tabularx}{\textwidth}{p{3.8cm}p{3cm}X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{3.8cm}|p{3cm}|X|}
+\hline
 Trạng thái & Dung lượng & Giải thích\\
-\midrule
+\hline
 Chỉ có PGD sau \code{init_mm()} & 4096 byte & Chưa có bảng con\\
+\hline
 Mapping đầu tiên tại \code{0x0} & 20\,480 byte & PGD, P4D, PUD, PMD và PT\\
+\hline
 Thêm mapping tại \code{0x200000} & 24\,576 byte & Dùng chung cấp trên, tạo thêm một PT\\
+\hline
 Thêm high-canonical branch & 40\,960 byte & Tạo đường đi mới từ PGD index 256\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 Một mapping xa không buộc hệ thống cấp toàn bộ entry trung gian cho vùng chưa sử dụng.
@@ -1116,16 +1203,20 @@ paging đối với không gian địa chỉ dài.
 \begin{table}[H]
 \centering
 \caption{Tài nguyên dùng chung và cơ chế bảo vệ}
-\begin{tabularx}{\textwidth}{p{3.4cm}p{3.3cm}X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{3.4cm}|p{3.3cm}|X|}
+\hline
 Tài nguyên & Lock / primitive & Mục đích\\
-\midrule
+\hline
 MLQ queues, running list & \code{queue_lock} & Tránh hai CPU lấy cùng PCB; bảo vệ PID lookup\\
+\hline
 Free physical frame list & \code{memphy_lock} & Tránh cấp hoặc free cùng frame đồng thời\\
+\hline
 VMA, region table, kernel cache & \code{mmvm_lock} & Tuần tự hóa alloc/free và cập nhật metadata\\
+\hline
 Timer events & mutex + condition variable & Barrier giữa timer, loader và CPU\\
+\hline
 Loader completion & \code{atomic_int done} & Báo CPU dừng khi không còn process mới\\
-\bottomrule
+\hline
 \end{tabularx}
 \label{tab:locks}
 \end{table}
@@ -1168,14 +1259,16 @@ File \code{syscall.tbl} định nghĩa ba syscall:
 \begin{table}[H]
 \centering
 \caption{Các syscall trong phiên bản hiện tại}
-\begin{tabularx}{\textwidth}{p{2cm}p{3cm}X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{2cm}|p{3cm}|X|}
+\hline
 Number & Tên & Chức năng\\
-\midrule
+\hline
 0 & \code{listsyscall} & In toàn bộ syscall table\\
+\hline
 17 & \code{memmap} & Dispatcher cho các memory operation\\
+\hline
 440 & \code{xxx} & Syscall minh họa nhận tham số scalar\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
@@ -1233,66 +1326,66 @@ sạch bằng \code{make clean \&\& make all} hoàn tất với \code{-Wall} mà
 \begin{table}[H]
 \centering
 \caption{Liên kết yêu cầu, rủi ro và bằng chứng kiểm thử}
-\begin{tabularx}{\textwidth}{p{3.1cm}X X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{3.1cm}|X|X|}
+\hline
 Yêu cầu & Rủi ro cần phát hiện & Test/bằng chứng chính\\
-\midrule
+\hline
 MLQ nhiều CPU & Hai CPU lấy cùng PCB; priority hoặc slot sai &
 \code{sched_prio}, \code{sched_out_of_slot}, \code{sched_2_cpu}\\
+\hline
 Data-segment allocation & Không tái sử dụng vùng free; sai ranh giới &
 \code{os_mem_reuse}, Hình~\ref{fig:evidence-mem-reuse}\\
+\hline
 User/kernel separation & Caller đọc frame thuộc PID khác &
 \code{os_cross_pid_protection}, Hình~\ref{fig:evidence-cross-pid}\\
+\hline
 Copy user/kernel & Dữ liệu thay đổi hoặc truy cập sai region &
 \code{os_mem_roundtrip}, Hình~\ref{fig:evidence-roundtrip}\\
+\hline
 Multi-level paging & Chỉ chạy branch 0; nhận địa chỉ non-canonical &
 \code{os_mm64_canonical}, Hình~\ref{fig:evidence-mm64}\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
-\begin{longtable}{p{0.39\textwidth}p{0.22\textwidth}p{0.29\textwidth}}
+\begin{longtable}{|p{0.39\textwidth}|p{0.22\textwidth}|p{0.29\textwidth}|}
 \caption{Nhóm testcase hiện có}\label{tab:tests}\\
-\toprule
+\hline
 Test & Thành phần & Mục tiêu\\
-\midrule
+\hline
 \endfirsthead
-\toprule
+\hline
 Test & Thành phần & Mục tiêu\\
-\midrule
+\hline
 \endhead
 \code{sched}, \code{sched_0}, \code{sched_1} & Scheduler & MLQ cơ bản và multi-CPU\\
+\hline
 \code{sched_prio} & Scheduler & Process ưu tiên cao đến sau\\
+\hline
 \code{sched_out_of_slot} & Scheduler & Giới hạn slot và reset\\
+\hline
 \code{sched_2_cpu} & Scheduler & Hai CPU lấy PCB khác nhau\\
+\hline
 \code{os_0/1/2_mlq_paging} & Integration & Scheduler kết hợp paging\\
+\hline
 \code{os_1_mlq_paging_small_1K} & Memory & RAM nhỏ và thiếu frame\\
+\hline
 \code{os_1_mlq_paging_small_4K} & Memory & RAM nhỏ và thiếu frame\\
+\hline
 \code{os_syscall}, \code{os_sc}, \code{os_syscall_list} & Syscall & Dispatch và handler\\
+\hline
 \code{os_mm64_canonical} & MM64 & Cấp branch PMD khác 0; từ chối non-canonical\\
+\hline
 \code{os_mem_reuse} & Memory & Cấp phát, free và tái sử dụng data region\\
+\hline
 \code{os_mem_roundtrip} & Memory & Copy user--kernel--user giữ nguyên byte\\
+\hline
 \code{os_mem_protection} & Protection & Từ chối raw physical access\\
+\hline
 \code{os_cross_pid_protection} & Protection & Từ chối truy cập frame thuộc PID khác\\
-\bottomrule
+\hline
 \end{longtable}
 
-\subsection{Kết quả kiểm thử thực tế}
-\begin{table}[H]
-\centering
-\caption{Kết quả kiểm chứng tại commit báo cáo}
-\begin{tabularx}{\textwidth}{X p{2.6cm}X}
-\toprule
-Lệnh / kịch bản & Kết quả & Ghi chú\\
-\midrule
-\code{make clean \&\& make all} & PASS & Build sạch, không warning từ \code{-Wall}\\
-\code{make test} & PASS & 22 kịch bản và toàn bộ semantic assertion qua\\
-\code{sched_2_cpu} lặp 5 lần & PASS & Không crash hoặc deadlock quan sát được\\
-\code{os_2_mlq_paging} lặp 3 lần & PASS & Không crash hoặc deadlock quan sát được\\
-\code{make report} & PASS & LuaLaTeX tạo PDF thành công\\
-\bottomrule
-\end{tabularx}
-\end{table}
 
 \begin{figure}[H]
 \centering
@@ -1378,7 +1471,7 @@ thêm một memory access ngoài năm lần đọc bảng.
 denial, cross-PID ownership, data-region reuse, non-canonical rejection, branch PMD
 khác 0 và giá trị round-trip. Cách này chịu được thay đổi thứ tự log giữa các CPU.}
 
-Các khoảng trống quan trọng:
+Các điểm yếu quan trọng:
 \begin{itemize}
   \item chưa có test xác nhận swap-out rồi swap-in giữ nguyên dữ liệu;
   \item chưa có stress test nhiều CPU và hàng trăm process;
@@ -1412,15 +1505,18 @@ swap-in/out đã có, còn replacement end-to-end chưa hoàn chỉnh hoặc đ�
 \begin{table}[H]
 \centering
 \caption{Giới hạn và tác động}
-\begin{tabularx}{\textwidth}{p{3.7cm}X X}
-\toprule
+\begin{tabularx}{\textwidth}{|p{3.7cm}|X|X|}
+\hline
 Giới hạn & Tác động & Hướng xử lý\\
-\midrule
+\hline
 Page replacement chưa có test end-to-end & Có thể còn lỗi khi RAM thật sự cạn & Thêm testcase ép swap và xác nhận dữ liệu\\
+\hline
 Free-region list không coalescing & Fragmentation metadata & Sắp xếp và gộp vùng kề nhau\\
+\hline
 Global \code{mmvm_lock} & Giảm song song giữa process & Lock theo \code{mm_struct}\\
+\hline
 Build artifacts được track trong Git & Conflict và repository nhiễu & Bỏ \code{obj/*.o}, binary và \code{.DS_Store}\\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
