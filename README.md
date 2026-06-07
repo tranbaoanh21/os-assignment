@@ -5,8 +5,8 @@ Mo phong he dieu hanh cho bai tap lon CO2018, gom:
 - MLQ scheduler co weighted slot va FIFO trong tung hang doi.
 - Unified system-call dispatcher; kernel lookup PCB bang PID.
 - User/kernel memory protection.
-- Paging 64-bit nam cap voi canonical-address validation.
-- Paging statistics va bo test scheduler, memory, syscall.
+- Paging 64-bit nam cap cap dong voi low/high canonical-address validation.
+- Paging statistics va 22 testcase co semantic assertions.
 
 ## Quick start
 

@@ -32,13 +32,8 @@ static int caller_owns_phyaddr(struct pcb_t *caller, addr_t phyaddr)
    if (caller == NULL || caller->mm == NULL)
       return 0;
 #ifdef MM64
-   for (pgn = 0; pgn < PAGING64_MAX_PGN; pgn++) {
-      uint32_t pte = (uint32_t)caller->mm->pt[pgn];
-      if (PAGING_PAGE_PRESENT(pte) &&
-          !(pte & PAGING_PTE_SWAPPED_MASK) &&
-          PAGING_FPN(pte) == fpn)
-         return 1;
-   }
+   (void)pgn;
+   return paging64_owns_fpn(caller->mm, fpn);
 #else
    for (pgn = 0; pgn < PAGING_MAX_PGN; pgn++) {
       uint32_t pte = caller->mm->pgd[pgn];
@@ -73,6 +68,8 @@ int __sys_memmap(struct krnl_t *krnl, uint32_t pid, struct sc_regs* regs)
       return inc_vma_limit(caller, regs->a2, regs->a3);
    case SYSMEM_SWP_OP:
       return __mm_swap_page(caller, regs->a2, regs->a3);
+   case SYSMEM_SWP_IN_OP:
+      return __mm_swap_page_in(caller, regs->a2, regs->a3);
    case SYSMEM_IO_READ:
       if (!caller_owns_phyaddr(caller, regs->a2)) {
          printf("Kernel denied PID %u physical read at 0x%llx\n", pid,

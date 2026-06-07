@@ -29,7 +29,17 @@ int paging64_is_canonical(addr_t addr)
   return sign ? upper == 0x7fULL : upper == 0;
 }
 
-static int walk_pte(struct pcb_t *caller, addr_t pgn, addr_t **ret_pte)
+static addr_t *alloc_table(struct mm_struct *mm)
+{
+  addr_t *table = calloc(PAGING64_ENTRIES, sizeof(addr_t));
+
+  if (table != NULL)
+    mm->pgtable_bytes += PAGING64_ENTRIES * sizeof(addr_t);
+  return table;
+}
+
+static int walk_pte(struct pcb_t *caller, addr_t pgn, addr_t **ret_pte,
+                    int create)
 {
   struct mm_struct *mm;
   addr_t addr;
@@ -39,8 +49,7 @@ static int walk_pte(struct pcb_t *caller, addr_t pgn, addr_t **ret_pte)
   addr_t *pmd_tbl;
   addr_t *pt_tbl;
 
-  if (caller == NULL || caller->mm == NULL || ret_pte == NULL ||
-      pgn >= PAGING64_MAX_PGN)
+  if (caller == NULL || caller->mm == NULL || ret_pte == NULL)
     return -1;
 
   mm = caller->mm;
@@ -52,20 +61,38 @@ static int walk_pte(struct pcb_t *caller, addr_t pgn, addr_t **ret_pte)
   mm->pgtable_walks++;
   mm->pgtable_accesses++;
   p4d_tbl = (addr_t *)mm->pgd[pgd];
-  if (p4d_tbl == NULL)
-    return -1;
+  if (p4d_tbl == NULL && create) {
+    p4d_tbl = alloc_table(mm);
+    mm->pgd[pgd] = (addr_t)p4d_tbl;
+  }
+  if (p4d_tbl == NULL) return -1;
   mm->pgtable_accesses++;
   pud_tbl = (addr_t *)p4d_tbl[p4d];
-  if (pud_tbl == NULL)
-    return -1;
+  if (pud_tbl == NULL && create) {
+    pud_tbl = alloc_table(mm);
+    p4d_tbl[p4d] = (addr_t)pud_tbl;
+  }
+  if (pud_tbl == NULL) return -1;
   mm->pgtable_accesses++;
   pmd_tbl = (addr_t *)pud_tbl[pud];
-  if (pmd_tbl == NULL)
-    return -1;
+  if (pmd_tbl == NULL && create) {
+    pmd_tbl = alloc_table(mm);
+    pud_tbl[pud] = (addr_t)pmd_tbl;
+  }
+  if (pmd_tbl == NULL) return -1;
   mm->pgtable_accesses++;
   pt_tbl = (addr_t *)pmd_tbl[pmd];
-  if (pt_tbl == NULL)
-    return -1;
+  if (pt_tbl == NULL && create) {
+    pt_tbl = alloc_table(mm);
+    pmd_tbl[pmd] = (addr_t)pt_tbl;
+  }
+  if (pt_tbl == NULL) return -1;
+  if (pgd == 0 && p4d == 0 && pud == 0 && pmd == 0) {
+    mm->p4d = p4d_tbl;
+    mm->pud = pud_tbl;
+    mm->pmd = pmd_tbl;
+    mm->pt = pt_tbl;
+  }
   mm->pgtable_accesses++;
   *ret_pte = &pt_tbl[pt];
   return 0;
@@ -96,7 +123,7 @@ int init_pte(addr_t *pte,
     }
     else
     { // page swapped
-      SETBIT(*pte, PAGING_PTE_PRESENT_MASK);
+      CLRBIT(*pte, PAGING_PTE_PRESENT_MASK);
       SETBIT(*pte, PAGING_PTE_SWAPPED_MASK);
       CLRBIT(*pte, PAGING_PTE_DIRTY_MASK);
 
@@ -167,10 +194,10 @@ int pte_set_swap(struct pcb_t *caller, addr_t pgn, int swptyp, addr_t swpoff)
   addr_t *pte;
 	
   pte = NULL;
-  if (walk_pte(caller, pgn, &pte) != 0)
+  if (walk_pte(caller, pgn, &pte, 1) != 0)
     return -1;
 	
-  SETBIT(*pte, PAGING_PTE_PRESENT_MASK);
+  CLRBIT(*pte, PAGING_PTE_PRESENT_MASK);
   SETBIT(*pte, PAGING_PTE_SWAPPED_MASK);
 
   SETVAL(*pte, swptyp, PAGING_PTE_SWPTYP_MASK, PAGING_PTE_SWPTYP_LOBIT);
@@ -189,7 +216,7 @@ int pte_set_fpn(struct pcb_t *caller, addr_t pgn, addr_t fpn)
   addr_t *pte;
 	
   pte = NULL;
-  if (walk_pte(caller, pgn, &pte) != 0)
+  if (walk_pte(caller, pgn, &pte, 1) != 0)
     return -1;
 
   SETBIT(*pte, PAGING_PTE_PRESENT_MASK);
@@ -210,7 +237,7 @@ uint32_t pte_get_entry(struct pcb_t *caller, addr_t pgn)
 {
   addr_t *pte;
 
-  if (walk_pte(caller, pgn, &pte) != 0)
+  if (walk_pte(caller, pgn, &pte, 0) != 0)
     return 0;
   return (uint32_t)*pte;
 }
@@ -224,7 +251,7 @@ int pte_set_entry(struct pcb_t *caller, addr_t pgn, uint32_t pte_val)
 {
 	addr_t *pte;
 
-	if (walk_pte(caller, pgn, &pte) != 0)
+	if (walk_pte(caller, pgn, &pte, 1) != 0)
 		return -1;
 	*pte = pte_val;
 	
@@ -240,20 +267,26 @@ int vmap_pgd_memset(struct pcb_t *caller,           // process call
                     int pgnum)                      // num of mapping page
 {
   int pgit = 0;
-  addr_t pgn = PAGING_PGN(addr);
+  addr_t pgn = addr >> PAGING64_ADDR_PT_SHIFT;
 
   if (!paging64_is_canonical(addr)) {
     printf("MM64 rejected non-canonical address 0x%llx\n",
            (unsigned long long)addr);
     return -1;
   }
-  if (pgnum < 0 || pgn + (addr_t)pgnum > PAGING64_MAX_PGN)
+  if ((addr & (PAGING64_PAGESZ - 1)) != 0 || pgnum < 0 ||
+      (pgnum > 0 &&
+       (addr > ~(addr_t)0 - (addr_t)(pgnum - 1) * PAGING64_PAGESZ ||
+        !paging64_is_canonical(addr + (addr_t)(pgnum - 1) * PAGING64_PAGESZ))))
     return -1;
 
   for (pgit = 0; pgit < pgnum; pgit++)
     if (pte_set_entry(caller, pgn + pgit, 0) != 0)
       return -1;
 
+  printf("MM64 mapped %d dummy page(s) at 0x%llx\n", pgnum,
+         (unsigned long long)addr);
+  print_pgtbl(caller, addr, addr + (addr_t)pgnum * PAGING64_PAGESZ);
   return 0;
 }
 
@@ -411,23 +444,12 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
   (void)caller;
 
   mm->pgd = calloc(PAGING64_ENTRIES, sizeof(addr_t));
-  mm->p4d = calloc(PAGING64_ENTRIES, sizeof(addr_t));
-  mm->pud = calloc(PAGING64_ENTRIES, sizeof(addr_t));
-  mm->pmd = calloc(PAGING64_ENTRIES, sizeof(addr_t));
-  mm->pt = calloc(PAGING64_ENTRIES, sizeof(addr_t));
-  if (vma0 == NULL || mm->pgd == NULL || mm->p4d == NULL ||
-      mm->pud == NULL || mm->pmd == NULL || mm->pt == NULL)
+  mm->p4d = mm->pud = mm->pmd = mm->pt = NULL;
+  if (vma0 == NULL || mm->pgd == NULL)
     return -1;
-
-  /* The simulator supports a sparse 2 MiB user range. Its populated
-   * branch still performs a real five-level page-table walk. */
-  mm->pgd[0] = (addr_t)mm->p4d;
-  mm->p4d[0] = (addr_t)mm->pud;
-  mm->pud[0] = (addr_t)mm->pmd;
-  mm->pmd[0] = (addr_t)mm->pt;
   mm->pgtable_accesses = 0;
   mm->pgtable_walks = 0;
-  mm->pgtable_bytes = 5ULL * PAGING64_ENTRIES * sizeof(addr_t);
+  mm->pgtable_bytes = PAGING64_ENTRIES * sizeof(addr_t);
 
 
   /* By default the owner comes with at least one vma */
@@ -586,6 +608,79 @@ int print_pgtbl(struct pcb_t *caller, addr_t start, addr_t end)
   return 0;
 }
 
+static int table_owns_fpn(addr_t *table, int depth, addr_t fpn)
+{
+  int i;
+
+  if (table == NULL)
+    return 0;
+  if (depth == 4) {
+    for (i = 0; i < PAGING64_ENTRIES; i++) {
+      uint32_t pte = (uint32_t)table[i];
+      if (PAGING_PAGE_PRESENT(pte) &&
+          !(pte & PAGING_PTE_SWAPPED_MASK) && PAGING_FPN(pte) == fpn)
+        return 1;
+    }
+    return 0;
+  }
+  for (i = 0; i < PAGING64_ENTRIES; i++)
+    if (table[i] != 0 && table_owns_fpn((addr_t *)table[i], depth + 1, fpn))
+      return 1;
+  return 0;
+}
+
+int paging64_owns_fpn(struct mm_struct *mm, addr_t fpn)
+{
+  return mm != NULL && table_owns_fpn(mm->pgd, 0, fpn);
+}
+
+static void release_table_frames(addr_t *table, int depth,
+                                 struct memphy_struct *mram,
+                                 struct memphy_struct *active_mswp)
+{
+  int i;
+
+  if (table == NULL)
+    return;
+  if (depth == 4) {
+    for (i = 0; i < PAGING64_ENTRIES; i++) {
+      uint32_t pte = (uint32_t)table[i];
+      if ((pte & PAGING_PTE_SWAPPED_MASK) != 0)
+        MEMPHY_put_freefp(active_mswp, PAGING_SWP(pte));
+      else if (PAGING_PAGE_PRESENT(pte))
+        MEMPHY_put_freefp(mram, PAGING_FPN(pte));
+      table[i] = 0;
+    }
+    return;
+  }
+  for (i = 0; i < PAGING64_ENTRIES; i++)
+    if (table[i] != 0)
+      release_table_frames((addr_t *)table[i], depth + 1, mram, active_mswp);
+}
+
+int paging64_release_user_frames(struct mm_struct *mm,
+                                 struct memphy_struct *mram,
+                                 struct memphy_struct *active_mswp)
+{
+  if (mm == NULL)
+    return -1;
+  release_table_frames(mm->pgd, 0, mram, active_mswp);
+  return 0;
+}
+
+static void free_page_table_tree(addr_t *table, int depth)
+{
+  int i;
+
+  if (table == NULL)
+    return;
+  if (depth < 4)
+    for (i = 0; i < PAGING64_ENTRIES; i++)
+      if (table[i] != 0)
+        free_page_table_tree((addr_t *)table[i], depth + 1);
+  free(table);
+}
+
 int destroy_mm(struct mm_struct *mm, struct memphy_struct *mram,
                struct memphy_struct *active_mswp)
 {
@@ -597,13 +692,7 @@ int destroy_mm(struct mm_struct *mm, struct memphy_struct *mram,
   if (mm == NULL)
     return 0;
 
-  for (pgn = 0; pgn < PAGING64_MAX_PGN; pgn++) {
-    uint32_t pte = (uint32_t)mm->pt[pgn];
-    if ((pte & PAGING_PTE_SWAPPED_MASK) != 0)
-      MEMPHY_put_freefp(active_mswp, PAGING_SWP(pte));
-    else if (PAGING_PAGE_PRESENT(pte))
-      MEMPHY_put_freefp(mram, PAGING_FPN(pte));
-  }
+  paging64_release_user_frames(mm, mram, active_mswp);
   for (pgn = 0; pgn < PAGING_MAX_SYMTBL_SZ; pgn++) {
     int page;
     for (page = 0; page < mm->kphy_npages[pgn]; page++)
@@ -623,11 +712,7 @@ int destroy_mm(struct mm_struct *mm, struct memphy_struct *mram,
     free(vma);
   }
   free(mm->kcpooltbl);
-  free(mm->pt);
-  free(mm->pmd);
-  free(mm->pud);
-  free(mm->p4d);
-  free(mm->pgd);
+  free_page_table_tree(mm->pgd, 0);
   free(mm);
   return 0;
 }

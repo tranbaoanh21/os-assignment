@@ -1,309 +1,1454 @@
 % !TEX program = lualatex
 \documentclass[12pt,a4paper]{article}
+
 \usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Courier New}[Scale=0.82]
 \usepackage[english]{babel}
 \usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{eso-pic}
+\usepackage{tocloft}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{longtable}
-\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage{amsmath}
-\usepackage{graphicx}
-\geometry{margin=2.2cm}
-\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
-\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
 
-\title{\textbf{BÁO CÁO BÀI TẬP LỚN\\SIMPLE OPERATING SYSTEM}}
-\author{Trần Nhật Bảo Anh -- MSSV 2410155}
-\date{Tháng 6 năm 2026}
+\graphicspath{{assets/}}
+\geometry{left=2.5cm,right=2cm,top=3.4cm,bottom=2.5cm,headheight=55pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\hfuzz}{2pt}
+\hypersetup{
+  unicode=true,
+  colorlinks=false,
+  hidelinks,
+  hypertexnames=false,
+}
+\setlength{\parindent}{1.2cm}
+\setlength{\parskip}{0.25em}
+\setlist[itemize]{itemsep=0.2em,topsep=0.3em}
+\setlist[enumerate]{itemsep=0.2em,topsep=0.3em}
+\captionsetup{font=small,labelfont=bf}
+\addto\captionsenglish{%
+  \renewcommand{\contentsname}{Mục lục}%
+  \renewcommand{\listfigurename}{Danh sách hình}%
+  \renewcommand{\listtablename}{Danh sách bảng}%
+  \renewcommand{\figurename}{Hình}%
+  \renewcommand{\tablename}{Bảng}%
+}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\setlength{\cftbeforesecskip}{8pt}
+\renewcommand{\cftsecfont}{\bfseries}
+\setcounter{tocdepth}{3}
+
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headwidth}{\textwidth}
+\fancyhfoffset[L,R]{-1pt}
+\lhead{%
+  \begin{tabular}{@{}cl@{}}
+    \begin{minipage}[c]{1.1cm}
+      \includegraphics[height=1cm]{logobkheader.png}
+    \end{minipage}
+    &
+    \begin{minipage}[c]{8.5cm}
+      \textbf{\footnotesize Trường Đại học Bách Khoa -- ĐHQG TP.HCM}\\
+      \textbf{\footnotesize Khoa Khoa học và Kỹ thuật Máy tính}
+    \end{minipage}
+  \end{tabular}%
+}
+\rhead{%
+  \begin{minipage}[c]{4cm}
+    \raggedleft
+    \textbf{\footnotesize Môn học:}\\
+    \footnotesize Hệ điều hành -- CO2018
+  \end{minipage}%
+}
+\lfoot{\footnotesize Niên khóa 2025--2026}
+\rfoot{\footnotesize Trang \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \lhead{%
+    \begin{tabular}{@{}cl@{}}
+      \includegraphics[height=0.9cm]{logobkheader.png} &
+      \begin{minipage}[c]{8.5cm}
+        \textbf{\footnotesize Trường Đại học Bách Khoa -- ĐHQG TP.HCM}\\
+        \textbf{\footnotesize Khoa Khoa học và Kỹ thuật Máy tính}
+      \end{minipage}
+    \end{tabular}%
+  }
+  \rhead{\footnotesize\textbf{Hệ điều hành -- CO2018}}
+  \lfoot{\footnotesize Niên khóa 2025--2026}
+  \rfoot{\footnotesize Trang \thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+
+\definecolor{codebg}{RGB}{247,248,250}
+\definecolor{codeframe}{RGB}{205,210,218}
+\definecolor{codecomment}{RGB}{55,125,75}
+\definecolor{codekeyword}{RGB}{30,75,165}
+\definecolor{codestring}{RGB}{165,65,45}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{codekeyword}\bfseries,
+  commentstyle=\color{codecomment},
+  stringstyle=\color{codestring},
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=7pt,
+  xleftmargin=1.5em,
+  framexleftmargin=1em
+}
+
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\notebox}[1]{%
+  \begin{center}
+  \fcolorbox{blue!45!black}{blue!4}{\parbox{0.92\textwidth}{#1}}
+  \end{center}
+}
+\newcommand{\warningbox}[1]{%
+  \begin{center}
+  \fcolorbox{orange!70!black}{orange!6}{\parbox{0.92\textwidth}{#1}}
+  \end{center}
+}
 
 \begin{document}
-\maketitle
-\tableofcontents
+
+\begin{titlepage}
+\thispagestyle{empty}
+\AddToShipoutPictureBG*{%
+  \AtPageLowerLeft{%
+    \begin{tikzpicture}[remember picture,overlay]
+      \draw[blue!65!black,line width=1.2pt]
+        ([xshift=1.25cm,yshift=1.25cm]current page.south west)
+        rectangle
+        ([xshift=-1.25cm,yshift=-1.25cm]current page.north east);
+      \draw[blue!25,line width=0.45pt]
+        ([xshift=1.42cm,yshift=1.42cm]current page.south west)
+        rectangle
+        ([xshift=-1.42cm,yshift=-1.42cm]current page.north east);
+    \end{tikzpicture}%
+  }%
+}
+\centering
+\textbf{\large ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH}\\
+\textbf{\large TRƯỜNG ĐẠI HỌC BÁCH KHOA}\\
+\textbf{\large KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH}\\
+\rule{6cm}{0.8pt}
+
+\vspace{0.7cm}
+\includegraphics[width=4cm]{logobkheader.png}
+
+\vspace{0.7cm}
+{\fontsize{24pt}{28pt}\selectfont\bfseries BÁO CÁO BÀI TẬP LỚN}\\[0.5cm]
+{\LARGE\bfseries MÔN HỌC: HỆ ĐIỀU HÀNH -- CO2018}\\[0.8cm]
+\rule{11cm}{0.6pt}\\[0.8cm]
+{\LARGE\bfseries SIMPLE OPERATING SYSTEM}
+
+\vfill
+\begin{tabular}{>{\bfseries}p{4.5cm}p{8cm}}
+Nhóm thực hiện: & Nhóm sinh viên lớp L02\\
+Lớp: & L02\\
+Giảng viên hướng dẫn: & Thầy Mai Đức Trung\\
+\end{tabular}
+
+\vfill
+\textbf{Thành phố Hồ Chí Minh, tháng 6 năm 2026}
+\end{titlepage}
+
+\newpage
+\pagenumbering{roman}
+\setcounter{page}{1}
+\section*{DANH SÁCH THÀNH VIÊN THAM GIA}
+\addcontentsline{toc}{section}{Danh sách thành viên tham gia}
+\begin{table}[H]
+\centering
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.5}
+\small
+\begin{tabular}{|c|c|p{4.7cm}|p{6.5cm}|}
+\hline
+\textbf{STT} & \textbf{MSSV} & \centering\textbf{Họ và tên} &
+\centering\arraybackslash\textbf{Nhiệm vụ}\\
+\hline
+1 & 2410155 & Trần Nhật Bảo Anh & Hiện thực, kiểm thử và tổng hợp báo cáo\\
+\hline
+2 & 2413707 & Nguyễn Quốc Trung & Tham gia hiện thực và kiểm thử hệ thống\\
+\hline
+3 & 2410297 & Trần Hoàng Quốc Bảo & Tham gia hiện thực và phân tích kết quả\\
+\hline
+4 & 2410046 & Trịnh Quốc An & Tham gia kiểm thử và hoàn thiện tài liệu\\
+\hline
+5 & 2410841 & Nguyễn Trường Giang & Tham gia kiểm thử và rà soát báo cáo\\
+\hline
+\end{tabular}
+\caption{Danh sách thành viên nhóm}
+\end{table}
+
+\vfill
 \newpage
 
-\section{Tổng quan}
-Dự án mô phỏng một hệ điều hành đa nhiệm gồm MLQ scheduler, unified system
-call, phân tách user/kernel space và paging 64-bit năm cấp. Mỗi CPU được mô
-phỏng bởi một thread. Scheduler queue, danh sách process đang chạy và physical
-frame free-list được bảo vệ bằng mutex.
+\tableofcontents
+\newpage
+\listoffigures
+\listoftables
+\newpage
 
-Mỗi process sở hữu một \texttt{proc->mm}. Kernel không thay đổi một con trỏ
-\texttt{krnl->mm} dùng chung khi context switch, do đó nhiều CPU không thể vô
-tình thao tác trên address space của process khác.
+\section*{Tóm tắt}
+\addcontentsline{toc}{section}{Tóm tắt}
+Bài tập lớn xây dựng một chương trình mô phỏng các thành phần quan trọng của một hệ
+điều hành đơn giản: bộ lập lịch nhiều mức ưu tiên, đồng bộ hóa nhiều luồng, quản lý bộ
+nhớ ảo và vật lý, giao diện lời gọi hệ thống, phân tách user/kernel space và bảng trang
+64-bit năm cấp. Mỗi CPU được mô phỏng bằng một POSIX thread; loader, timer và các CPU
+phối hợp qua mutex và condition variable để tạo ra tiến trình thực thi theo từng time
+slot.
 
-\section{Trả lời câu hỏi lý thuyết}
-\subsection{Unified system-call interface}
-Ưu điểm là cung cấp một giao diện thống nhất, giảm coupling giữa chương trình
-user và implementation trong kernel, đồng thời tạo một điểm kiểm tra quyền truy
-cập tập trung. Nhược điểm là phát sinh overhead do trap, dispatch và validation;
-giao diện chung cũng có thể không biểu diễn tốt các đặc tính riêng của từng
-thiết bị.
+Nhóm triển khai MLQ với 140 hàng đợi và ngân sách slot phụ thuộc priority; chuyển các
+thao tác memory quan trọng qua syscall dùng PID thay vì truyền trực tiếp PCB; bổ sung
+kernel allocation, cache pool, kiểm tra quyền truy cập physical memory; và thực hiện
+page-table walk qua PGD, P4D, PUD, PMD, PT. Báo cáo trình bày thiết kế, đối chiếu mã
+nguồn, phân tích testcase, thống kê chi phí bảng trang và nêu rõ các giới hạn còn tồn tại.
 
-\subsection{System call thực thi quá lâu}
-Hệ điều hành dùng timer interrupt hoặc watchdog để phát hiện. Kernel có thể
-preempt tác vụ nếu kiến trúc cho phép, chuyển process sang trạng thái blocked
-khi chờ I/O, hoặc kết thúc process nếu vi phạm giới hạn. Kernel code phải tránh
-giữ lock trong thời gian dài để không chặn toàn hệ thống.
+\notebox{\textbf{Phạm vi xác nhận.} Các kết luận trong báo cáo dựa trên mã nguồn và
+các testcase trong thư mục \code{input/}. Dynamic sparse page-table allocation được
+kiểm chứng ở branch PMD khác 0; các phép copy user--kernel được kiểm tra bằng giá trị
+đọc lại. Page replacement end-to-end vẫn được trình bày thận trọng vì chưa có testcase
+ép RAM cạn rồi xác nhận toàn bộ chu trình swap-out/swap-in.}
 
-\subsection{Lợi ích của các chính sách MLQ}
-Process có giá trị priority nhỏ được phục vụ trước. Số slot của mức $i$ bằng
-\texttt{MAX\_PRIO - i}, nên mức ưu tiên cao nhận nhiều CPU time hơn. FIFO trong
-từng queue tạo fairness giữa các process cùng mức. Khi các queue đang có process
-đều hết slot, scheduler reset slot để process priority thấp vẫn có cơ hội chạy.
+\newpage
+\pagenumbering{arabic}
 
-\subsection{Paging và continuous allocation}
-Continuous allocation dịch địa chỉ đơn giản nhưng gây external fragmentation và
-khó cấp phát vùng lớn. Paging loại bỏ external fragmentation và hỗ trợ swapping,
-đổi lại có internal fragmentation, chi phí page table và nhiều lần memory access
-khi dịch địa chỉ.
+\section{Giới thiệu và kiến trúc hệ thống}
 
-\subsection{Kết hợp segmentation và paging}
-Segmentation phản ánh cấu trúc logic như code, data, heap và stack, thuận lợi
-cho protection. Paging quản lý physical memory theo frame cố định. Kết hợp hai
-cơ chế giữ được protection theo segment nhưng tránh external fragmentation khi
-nạp segment vào RAM.
-
-\subsection{Lợi ích của N-level paging}
-Không gian địa chỉ 64-bit rất thưa. Hierarchical paging chỉ cần tạo các nhánh
-được sử dụng thay vì một flat page table khổng lồ. Đánh đổi là mỗi translation
-phải truy cập nhiều bảng; TLB có thể giảm chi phí này.
-
-\subsection{Hậu quả khi thiếu synchronization}
-Hai CPU có thể lấy cùng PCB khỏi ready queue hoặc lấy cùng physical frame khỏi
-free-list. Kết quả là process chạy đồng thời trên hai CPU, page table bị ghi đè,
-double-free hoặc data corruption. Implementation dùng \texttt{queue\_lock} cho
-scheduler và mutex cho frame allocator cùng các thao tác cập phát memory.
-
-\section{CPU Scheduling}
-Mục tiêu của phần này là mô phỏng bộ lập lịch CPU cho một hệ điều hành đa nhiệm dựa trên chính sách \textbf{Multi-Level Queue - MLQ} kết hợp cơ chế quản lý slot thời gian. Hệ thống hỗ trợ đa xử lý đối xứng (SMP) với nhiều lõi CPU ảo chạy đồng thời, có tính preemptive khi có tiến trình ưu tiên cao hơn xuất hiện.
-\subsection{Nguyên lý vận hành và cơ chế slot trong MLQ}
+\subsection{Mục tiêu bài tập}
+Theo đặc tả, bài tập tập trung vào ba nhóm năng lực chính:
 \begin{itemize}
-    \item Hệ thống quản lý tối đa $MAX\_PRIO = 140$ mức độ ưu tiên. Mỗi hàng đợi tương ứng với một mức ưu tiên cố định, giá trị độ ưu tiên càng nhỏ thì mức độ ưu tiên thực thi càng cao. 
-    \item Để tránh hiện tượng \textit{starvation}, mỗi hàng đợi được cấp một số lượng slot giới hạn sử dụng CPU liên tiếp trong một chu kỳ điều phối theo công thức:
-        \begin{equation}
-            \text{slot}[\text{prio}] = MAX\_PRIO - \text{prio}
-        \end{equation}
-    \item Bộ lập lịch sẽ duyệt hàng đợi từ mức ưu tiên cao nhất xuống thấp nhất ($0 \rightarrow 139$). Khi tiến trình được chọn, nó thực thi tối đa trong một khoảng thời gian $time\_slice$.
-    \item Nếu hàng đợi hết slot hoặc trống, hệ thống chuyển xuống hàng đợi tiếp theo. Khi tất cả các hàng đợi có tiến trình đều đã cạn kiệt slot, hệ thống kích hoạt cơ chế \textbf{Reset Slot} toàn cục để nạp lại giá trị ban đầu cho mảng slot.
+  \item xây dựng scheduler/dispatcher cho nhiều CPU theo chính sách Multi-Level Queue;
+  \item quản lý memory từ virtual address đến physical frame, đồng thời phân tách
+        user space và kernel space;
+  \item thiết kế giao diện syscall và bảo vệ các tài nguyên dùng chung bằng cơ chế
+        synchronization.
 \end{itemize}
-\subsection{Kết quả từ các testcase nhóm tự tạo}
-\subsubsection{Kiểm thử độ ưu tiên và ngắt cưỡng bức (sched\_prio)}
-\begin{lstlisting}[language=Verilog, caption={Input cho sched\_prio}]
-2 1 2 
-0 s0 1
-1 s1 0
-\end{lstlisting}
-\textbf{Chú thích:} $time\_slice = 2$, thực thi trên 1 CPU, cấu hình chi tiết của 2 tiến trình bao gồm:
 
-\begin{table}[h]
+Ngoài ba nhóm trên, phiên bản đề năm 2026 yêu cầu mô phỏng địa chỉ dài 64-bit bằng
+multi-level paging, cung cấp \code{vmap_pgd_memset}, thống kê số lần truy cập bảng
+trang và dung lượng lưu trữ, đồng thời trả lời đầy đủ các câu hỏi lý thuyết.
+
+\subsection{Đối chiếu trực tiếp với yêu cầu chấm điểm}
+\begin{table}[H]
 \centering
-\begin{tabular}{c|c|c|c}
-PID & Arrival & Burst & Priority \\
-\hline
-1 & 0 & 15 & 1 \\
-2 & 1 & 7 & 0 \\
-\end{tabular}
-\caption{Các process trong sched\_prio}
-\end{table}
-
-Khi $s0$ đang thực thi dở dang chu kỳ lệnh của mình tại đầu Time slot 2, tiến trình $s1$ với độ ưu tiên cao hơn ($PRIO = 0$) xuất hiện trong hàng đợi. Tại đầu Time slot 3, ngay khi kết thúc quantum thời gian của $s0$, bộ lập lịch thực hiện ngắt cưỡng bức đưa $s0$ về trạng thái chờ và nhường quyền chiếm dụng CPU cho $s1$. Sau khi $s1$ hoàn thành toàn bộ công việc ở Time slot 10, $s0$ mới quay lại thực thi nốt phần Burst Time còn lại.
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/sched\_prio.png}
-    \caption{Biểu đồ Gantt kết quả cho test sched\_prio}
-    \label{fig:sched_prio}
-\end{figure}
-
-Kết quả từ biểu đồ Gantt ở trên cho thấy cơ chế ngắt cưỡng bức hoạt động vô cùng chính xác tại thời điểm giao thoa giữa các $time\_slice$. Luồng CPU không bị chiếm dụng vô thời hạn bởi tiến trình có độ ưu tiên thấp hơn khi có một tiến trình mang độ ưu tiên cao hơn sẵn sàng trong hệ thống. Đồng thời, log nạp tiến trình bất đồng bộ phản ánh đúng quan hệ song song giữa luồng CPU và luồng Loader.
-
-\subsubsection{Kiểm thử hết slot chu kỳ (sched\_out\_of\_slot)}
-\begin{lstlisting}[language=Verilog, caption={Input cho sched\_out\_of\_slot}]
-2 1 3
-0 s0 139
-1 s1 138
-2 s2 137
-\end{lstlisting}
-\textbf{Chú thích:} time slice = 2, thực thi trên 1 CPU, cấu hình chi tiết của 3 tiến trình bao gồm:
-
-\begin{table}[h]
-\centering
-\begin{tabular}{c|c|c|c}
-PID & Arrival & Burst & Priority \\
-\hline
-1 & 0 & 15 & 139 \\
-2 & 1 & 7 & 138 \\
-3 & 2 & 12 & 137
-\end{tabular}
-\caption{Các process trong sched\_out\_of\_slot}
-\end{table}
-
-Theo công thức phân bổ, số slot ban đầu được cấp lần lượt cho các hàng đợi là: $\text{slot}[137] = 3$, $\text{slot}[138] = 2$, và $\text{slot}[139] = 1$. Tiến trình $s0$ thực thi đầu tiên và tiêu thụ hết 1 slot của `Queue[139]`. Tại đầu Time slot 3, $s2$ xuất hiện và chiếm quyền thực thi nhờ độ ưu tiên cao nhất ($PRIO = 137$). Tiến trình $s2$ thực thi liên tục 3 \textit{quantum} liên tiếp từ Time slot 3 đến đầu Time slot 9, làm cạn kiệt hoàn toàn 3 slot của `Queue[137]`.
-
-Tại đầu Time slot 9, hệ thống luân chuyển quyền điều phối xuống cho tiến trình $s1$ thuộc hàng đợi kế tiếp. Tiến trình $s1$ thực thi tiêu tốn hết 2 slot từ Time slot 9 đến đầu Time slot 13. Lúc này, toàn bộ các tiến trình đang tồn tại đều đã sử dụng sạch các slot được cấp, hệ thống lập tức kích hoạt cơ chế \textbf{Reset Slot} toàn cục để nạp lại giá trị ban đầu, đưa $s2$ trở lại thực thi và giải phóng bộ nhớ ảo động (\textit{MM64 dump}) khi kết thúc. Kịch bản này chứng minh logic chuyển đổi trạng thái (\textit{Stateful transition}) của bộ lập lịch hoạt động hoàn toàn chính xác theo đặc tả hệ thống.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/sched\_out\_of\_slot.png}
-    \caption{Biểu đồ Gantt kết quả cho test sched\_out\_of\_slot}
-    \label{fig:sched_out_of_slot}
-\end{figure}
-
-Kết quả từ biểu đồ Gantt ở trên cho thấy bộ lập lịch đã thực hiện việc theo dõi và khấu trừ giá trị `slot` của từng hàng đợi một cách hiệu quả. Hiện tượng một tiến trình có độ ưu tiên cao chạy liên tục đúng số lần giới hạn rồi nhường quyền, và chu kỳ reset nạp lại năng lượng diễn ra tự động khi toàn bộ các hàng đợi cạn kiệt slot là minh chứng rõ nét cho thuật toán lập lịch MLQ được hiện thực hóa một cách chính xác.
-
-\subsubsection{Kiểm thử đa xử lí song song trên 2 CPU (sched\_2\_cpu)}
-\begin{lstlisting}[language=Verilog, caption={Input cho sched\_out\_of\_slot}]
-2 2 3
-0 s0 138
-0 s1 138
-1 s2 137
-\end{lstlisting}
-
-\textbf{Chú thích:} time slice = 2, thực thi trên 2 CPUs, cấu hình chi tiết của 3 tiến trình bao gồm:
-
-\begin{table}[h]
-\centering
-\begin{tabular}{c|c|c|c}
-PID & Arrival & Burst & Priority \\
-\hline
-1 & 0 & 15 & 138 \\
-2 & 0 & 7 & 138 \\
-3 & 1 & 12 & 137
-\end{tabular}
-\caption{Các process trong sched\_2\_cpu}
-\end{table}
-
-Test này thể hiện rõ cách xử lí song song trong bộ lập lịch dùng 2 CPU:
-
-\begin{table}[htbp]
-    \centering
-    \small
-    \caption{Bảng phân tích điều phối dòng thời gian trên 2 CPU}
-    \begin{tabular}{ccl}
-        \toprule
-        Thời gian (t) & CPU xử lý & Trạng thái điều phối và Chiếm dụng tài nguyên \\
-        \midrule
-        $1 \rightarrow 3$ & CPU 0 & Điều phối tiến trình $s0$ (PID 1) chạy trọn vẹn 1 Quantum. \\
-        $2 \rightarrow 4$ & CPU 1 & Điều phối song song tiến trình $s1$ (PID 2) chạy đồng thời. \\
-        $3 \rightarrow 15$ & CPU 0 & Ngắt $s0$, bốc siêu VIP $s2$ (PID 3) chạy liên tục qua các đợt reset slot. \\
-        $4 \rightarrow 15$ & CPU 1 & Luân phiên điều phối luân hồi Round Robin giữa $s0$ và $s1$. \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-Cơ chế khóa đồng bộ pthread\_mutex\_lock đã bảo vệ nghiêm ngặt vùng nhớ dùng chung, tối đa 2 CPU bốc 2 tiến trình khác nhau, hoàn toàn không xảy ra xung đột Race Condition hay tranh chấp làm hỏng struct dữ liệu. Tại mốc thời gian 15, cả $s2$ và $s1$ cùng chạm vạch đích và giải phóng bộ nhớ cùng một lúc, để lại $s0$ một mình hoàn thành nốt chặng đường còn lại.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/sched\_2\_cpu.png}
-    \caption{Biểu đồ trực quan Gantt chạy thực tế trên hệ thống 2 CPU (sched\_2\_cpu)}
-    \label{fig:sched_2_cpu}
-\end{figure}
-Kết quả từ biểu đồ Gantt ở trên cho thấy tính đúng đắn của giải thuật lập lịch đa lõi đối xứng. Hệ thống phân phối tối đa 2 tác vụ chạy song song trên 2 lõi độc lập, đảm bảo hiệu suất nạp tải của bộ vi xử lý phần cứng ảo mà không gây ra bất kỳ trạng thái Deadlock hay tranh chấp đọc/ghi nào trên cấu trúc dữ liệu hàng đợi dùng chung nhờ cơ chế loại trừ tương hỗ.
-
-\subsection{Kết luận}
-Qua quá trình triển khai cấu trúc dữ liệu mảng và kiểm thử thông qua các kịch bản thực nghiệm từ đơn giản đến phức tạp, module bộ lập lịch CPU dựa trên chính sách Multi-Level Queue đã chứng minh được tính ổn định và chính xác cao. 
-
-Kết quả thu được hoàn toàn tương thích và trùng khớp với các mẫu log đầu ra chuẩn được cung cấp trong cấu trúc mã nguồn của đồ án hệ thống. Cơ chế tính toán khấu trừ slot linh hoạt giúp tối ưu hóa hiệu năng, giảm thiểu tối đa hiện tượng starvation của các tiến trình có độ ưu tiên thấp , đồng thời cơ chế khóa đồng bộ hóa đảm bảo hệ thống bảo toàn tính nhất quán tuyệt đối trong môi trường xử lý đa luồng đa lõi song song.
-
-
-\section{System Call và phân tách User/Kernel}
-Các memory library wrapper ở user side chỉ dùng PCB để lấy PID và kernel handle,
-sau đó truyền scalar arguments qua syscall 17. Kernel gọi
-\texttt{find\_proc\_by\_pid()} để duyệt \texttt{running\_list},
-\texttt{ready\_queue} và MLQ queues dưới scheduler lock. PCB không được truyền
-như một syscall argument.
-
-Raw physical read/write chỉ thành công nếu frame vật lý hiện đang được map trong
-page table của PID gọi syscall. Test \texttt{os\_mem\_protection} cho kết quả:
-
-\begin{lstlisting}
-Kernel denied PID 1 physical read at 0x0
-Kernel denied PID 1 physical write at 0x0
-\end{lstlisting}
-
-Kernel allocation sử dụng địa chỉ thuộc vùng \texttt{PAGING\_KMEM\_BASE} và
-yêu cầu một dãy physical frame liên tiếp. Kernel region có physical mapping
-riêng và không xuất hiện trong user page table.
-
-\section{Memory Management}
-Mỗi process có VMA, symbol region table và free-region list riêng. Khi
-\texttt{alloc} không tìm được free region đủ lớn, kernel tăng VMA limit, lấy
-frame từ RAM và map page. \texttt{free} đưa region trở lại free-region list để
-tái sử dụng. Read/write kiểm tra region ID và offset trước khi dịch địa chỉ.
-
-\section{Paging 64-bit năm cấp}
-\subsection{Address translation}
-Địa chỉ canonical 57-bit được chia thành:
-
-\begin{center}
-\begin{tabular}{c|c|c}
+\caption{Ma trận yêu cầu, implementation và bằng chứng}
+\begin{tabularx}{\textwidth}{p{3.2cm}X X}
 \toprule
-Phần & Bit & Số entry\\
+Yêu cầu & Implementation chính & Bằng chứng kiểm thử / báo cáo\\
 \midrule
-PGD & 56--48 & 512\\
-P4D & 47--39 & 512\\
-PUD & 38--30 & 512\\
-PMD & 29--21 & 512\\
-PT  & 20--12 & 512\\
-Offset & 11--0 & 4096 byte/page theo sơ đồ địa chỉ\\
+Scheduling (3 điểm demo) & 140 MLQ queues, weighted slot, FIFO, \code{queue_lock} &
+\code{sched_prio}, \code{sched_out_of_slot}, \code{sched_2_cpu} và ba Gantt diagram\\
+MMU và user/kernel (2 điểm demo) & Syscall 17, PID lookup, region/frame ownership,
+kernel allocation & \code{os_mem_reuse}, \code{os_mem_roundtrip},
+\code{os_cross_pid_protection}\\
+Multi-level paging (2 điểm demo) & Canonical 57-bit, PGD--P4D--PUD--PMD--PT,
+sparse allocation, \code{vmap_pgd_memset} & \code{os_mm64_canonical}, thống kê
+\code{walks/accesses/bytes}\\
+Questionnaire và report (3 điểm) & Trả lời sáu câu hỏi trong đề; phân tích thiết kế,
+trade-off và giới hạn & Các mục ``Trả lời câu hỏi'', bảng kết quả, hình minh chứng và
+phân tích giới hạn\\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{tabularx}
+\label{tab:rubric-matrix}
+\end{table}
 
-Implementation thực hiện walk thật theo chuỗi
-\texttt{PGD -> P4D -> PUD -> PMD -> PT}. Không gian mô phỏng hiện tại chỉ cần
-một nhánh sparse ở các cấp trên. Địa chỉ có các bit 63--57 không phải sign
-extension của bit 56 bị từ chối. Test \texttt{os\_mm64\_canonical}:
+\subsection{Kiến trúc tổng quan}
 
-Sơ đồ địa chỉ 64-bit dùng offset 12 bit theo mô hình 4 KiB/page. Thiết bị
-physical-memory nhỏ trong simulator vẫn dùng frame granularity của framework
-gốc để các test RAM 1 KiB và 4 KiB tiếp tục kiểm tra được tình huống thiếu
-frame.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=8mm and 12mm,
+  box/.style={draw,rounded corners,minimum width=3.2cm,minimum height=0.9cm,
+              align=center,fill=blue!5},
+  hw/.style={draw,rounded corners,minimum width=3.2cm,minimum height=0.9cm,
+             align=center,fill=orange!8},
+  arr/.style={-{Latex[length=2.2mm]},thick},
+  sync/.style={thick,dashed,blue!55!black}
+]
+\node[box] (input) {Process descriptions\\và configuration};
+\node[box,right=of input] (loader) {Loader thread\\tạo PCB};
+\node[box,right=of loader] (sched) {MLQ Scheduler\\140 ready queues};
+\node[hw,below=of sched,xshift=-2cm] (cpu0) {CPU thread 0};
+\node[hw,right=of cpu0] (cpun) {CPU thread $N-1$};
+\node[box,below=6mm of $(cpu0)!0.5!(cpun)$,minimum width=7.6cm] (timer)
+  {Timer thread -- barrier đồng bộ theo time slot};
+\node[box,below=6mm of timer,xshift=-2cm] (syscall) {System-call dispatcher};
+\node[box,right=of syscall] (mmu) {Virtual memory\\MMU};
+\node[hw,below=of syscall,xshift=2cm] (mem) {MEMRAM và MEMSWAP};
+\coordinate (cpu0lane) at ([xshift=-5mm]cpu0.west);
+\coordinate (cpunlane) at ([xshift=10mm]cpun.east);
 
-\begin{lstlisting}
-MM64 rejected non-canonical address 0x100000000000000
-\end{lstlisting}
+\draw[arr] (input) -- (loader);
+\draw[arr] (loader) -- (sched);
+\draw[arr] (sched) -- (cpu0);
+\draw[arr] (sched) -- (cpun);
+\draw[arr] (cpu0.west) -- (cpu0lane) -- (cpu0lane |- syscall.west)
+  -- (syscall.west);
+\draw[arr] (cpun.east) -- (cpunlane) -- (cpunlane |- mmu.east)
+  -- (mmu.east);
+\draw[arr] (syscall) -- (mmu);
+\draw[arr] (mmu) -- (mem);
+\draw[sync] (timer.north -| cpu0) -- (cpu0.south);
+\draw[sync] (timer.north -| cpun) -- (cpun.south);
+\draw[sync] (timer.west) -| ([xshift=-5mm]input.south) -- (input.south);
+\end{tikzpicture}
+\caption{Kiến trúc tổng quát của chương trình mô phỏng}
+\label{fig:overall-architecture}
+\end{figure}
 
-\subsection{Thống kê}
-Mỗi process dùng năm bảng, mỗi bảng 512 entry, mỗi entry 8 byte:
-\[
-5 \times 512 \times 8 = 20480\ \text{byte}.
-\]
-Mỗi page-table walk hợp lệ truy cập năm cấp, nên
-\texttt{accesses = 5 * walks}. Ví dụ output:
+Luồng thực thi bắt đầu từ file cấu hình. Loader tạo PCB, nạp code segment và đưa PCB
+vào đúng MLQ queue. Mỗi CPU lấy một process từ scheduler, chạy từng instruction, sau
+mỗi quantum trả process chưa hoàn thành về queue. Timer đóng vai trò barrier: một time
+slot chỉ kết thúc khi loader và toàn bộ CPU đang hoạt động đều báo hoàn tất công việc
+của slot đó.
 
-\begin{lstlisting}
-MM64 pid=1 va=0x0 indexes=[0,0,0,0,0]
-walks=7 accesses=35 bytes=20480
-\end{lstlisting}
+\subsection{Các cấu trúc dữ liệu trung tâm}
 
-\section{Kiểm thử}
-\begin{longtable}{p{0.42\textwidth}p{0.18\textwidth}p{0.3\textwidth}}
+\begin{table}[H]
+\centering
+\caption{Vai trò của các cấu trúc dữ liệu chính}
+\begin{tabularx}{\textwidth}{>{\ttfamily}p{3.2cm}X X}
 \toprule
-Nhóm test & Kết quả & Mục tiêu\\
+Cấu trúc & Nội dung chính & Vai trò\\
 \midrule
-\endhead
-\texttt{sched}, \texttt{sched\_0}, \texttt{sched\_1} & PASS & MLQ và multi-CPU\\
-\texttt{os\_0/1/2\_mlq\_paging} & PASS & Scheduler kết hợp paging\\
-\texttt{os\_syscall}, \texttt{os\_syscall\_list}, \texttt{os\_sc} & PASS & Syscall dispatch\\
-\texttt{os\_mm64\_canonical} & PASS & Canonical-address validation\\
-\texttt{os\_mem\_protection} & PASS & Từ chối raw physical access\\
+pcb\_t & PID, priority, code, registers, PC, kernel handle, mm & Đại diện trạng thái của một process\\
+krnl\_t & scheduler queues, RAM, swap, kernel page tables & Registry dùng chung phía kernel\\
+queue\_t & Mảng con trỏ PCB và kích thước & Ready queue và running list\\
+mm\_struct & page tables, VMA, region tables, cache pools, thống kê & Address space riêng của process\\
+vm\_area\_struct & vm\_start, vm\_end, sbrk, free-region list & Miền địa chỉ ảo liên tục\\
+memphy\_struct & storage, size, free frame list & Thiết bị RAM hoặc SWAP mô phỏng\\
 \bottomrule
-\end{longtable}
+\end{tabularx}
+\label{tab:core-structures}
+\end{table}
 
-Toàn bộ test được chạy bằng:
-\begin{lstlisting}
+\subsection{Định dạng configuration và process description}
+Chương trình nhận đúng một đối số là tên configuration trong thư mục \code{input/}.
+Dòng đầu mô tả time slice, số CPU và số process. Khi \code{MM_FIXED_MEMSZ} không được
+bật, dòng thứ hai chỉ định kích thước RAM và tối đa bốn swap device. Các dòng còn lại
+mô tả thời điểm đến, tên chương trình và priority:
+\begin{lstlisting}[caption={Định dạng file cấu hình}]
+[time_slice] [number_of_cpus] [number_of_processes]
+[ram_size] [swap0_size] [swap1_size] [swap2_size] [swap3_size]
+[arrival_time_0] [program_0] [priority_0]
+...
+\end{lstlisting}
+
+Mỗi file trong \code{input/proc/} bắt đầu bằng legacy priority và số instruction. Loader
+đọc lần lượt opcode và argument, chuyển chúng thành mảng \code{struct inst_t}. Phiên bản
+hiện tại hỗ trợ các instruction trong Bảng~\ref{tab:instructions}.
+
+\begin{table}[H]
+\centering
+\caption{Instruction set của simulator}
+\begin{tabularx}{\textwidth}{p{3.1cm}p{4.2cm}X}
+\toprule
+Instruction & Cú pháp rút gọn & Ý nghĩa\\
+\midrule
+CALC & \code{calc} & Tiêu thụ một CPU instruction\\
+ALLOC / FREE & \code{alloc size rgid}, \code{free rgid} & Cấp phát và trả user region\\
+READ / WRITE & \code{read src off dst}, \code{write val dst off} & Truy cập user memory\\
+KMALLOC & \code{kmalloc size rgid} & Cấp kernel region có frame liên tiếp\\
+KMEM CACHE & create / alloc & Tạo pool và cấp object cùng kích thước\\
+COPY & from-user / to-user & Sao chép qua ranh giới user/kernel\\
+SYSCALL & \code{syscall nr a1 a2 a3} & Gọi syscall number tương ứng\\
+\bottomrule
+\end{tabularx}
+\label{tab:instructions}
+\end{table}
+
+\subsection{Vòng đời của một PCB}
+PCB được tạo bằng \code{calloc()}, nhận PID tăng dần từ \code{avail_pid}, sau đó loader
+nạp code segment và đặt priority theo configuration. Sau khi được thêm vào scheduler,
+PCB luân chuyển giữa ready queue và running list cho đến khi program counter bằng code
+size. CPU lúc đó xóa PCB khỏi running list, in thống kê page table, giải phóng
+\code{mm_struct}, code segment, legacy page table và PCB.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+ state/.style={draw,rounded corners,minimum width=2.35cm,minimum height=1cm,
+               align=center,fill=blue!5},
+ arr/.style={-{Latex[length=2mm]},thick},
+ edge label/.style={font=\footnotesize,fill=white,inner sep=2pt}
+]
+\node[state] (new) {NEW\\loader tạo PCB};
+\node[state,right=20mm of new] (ready) {READY\\MLQ queue};
+\node[state,right=20mm of ready] (run) {RUNNING\\một CPU};
+\node[state,right=24mm of run] (done) {FINISHED\\giải phóng};
+\draw[arr] (new) -- node[edge label,above]{\code{add_proc}} (ready);
+\draw[arr] (ready) -- node[edge label,above]{\code{get_proc}} (run);
+\draw[arr] (run) to[out=-90,in=-90,looseness=1.5]
+  node[edge label,below]{hết quantum: \code{put_proc}} (ready);
+\draw[arr] (run) -- node[edge label,above]{PC = code size} (done);
+\end{tikzpicture}
+\caption{Vòng đời process trong simulator}
+\label{fig:pcb-lifecycle}
+\end{figure}
+
+\subsection{Phương pháp triển khai và kiểm chứng}
+Nhóm bắt đầu từ các bất biến mà simulator phải duy trì: một PCB không được chạy đồng
+thời trên hai CPU, một physical frame không được cấp cho hai process, và userspace
+không được truyền trực tiếp con trỏ PCB qua ranh giới syscall. Các \code{TODO} trong
+skeleton sau đó được triển khai theo cấu trúc dữ liệu sẵn có. Cuối cùng, mỗi bất biến
+quan trọng được gắn với ít nhất một testcase hoặc output có thể quan sát.
+
+Quá trình kiểm chứng được chia thành ba mức:
+\begin{enumerate}
+  \item \textbf{Thành phần:} queue, syscall handler và page-table helper trả kết quả
+        đúng với input cụ thể.
+  \item \textbf{Tích hợp:} loader, scheduler, CPU, timer và memory chạy đồng thời trong
+        cùng binary mà không crash hoặc deadlock quan sát được.
+  \item \textbf{Semantic:} script không chỉ kiểm tra exit code mà còn xác nhận các
+        bất biến đầu ra như cross-PID denial và giá trị round-trip.
+\end{enumerate}
+
+\subsection{Luồng thực thi end-to-end}
+Một process description đi qua toàn bộ hệ thống theo chuỗi sau:
+\begin{enumerate}
+  \item Loader đọc priority và instruction, khởi tạo PCB cùng address space riêng.
+  \item Scheduler đặt PCB vào MLQ bucket; CPU lấy PCB dưới \code{queue_lock}.
+  \item Với thao tác memory, CPU gọi wrapper; wrapper chuẩn bị scalar register và gọi
+        syscall bằng PID.
+  \item Kernel tra PID trong scheduler lists, lấy PCB thật rồi kiểm tra region, page
+        table và quyền sở hữu frame.
+  \item Hết quantum, PCB quay lại ready queue; khi hoàn tất, page table và tài nguyên
+        liên quan được giải phóng.
+\end{enumerate}
+Luồng này cho thấy scheduler, syscall và memory subsystem phụ thuộc lẫn nhau thay vì là
+ba module chỉ được kiểm thử riêng rẽ.
+
+\subsection{Cấu hình build đang sử dụng}
+File \code{include/os-cfg.h} bật đồng thời \code{MLQ_SCHED}, \code{MM_PAGING},
+\code{MM64}, \code{IODUMP} và \code{PAGETBL_DUMP}. Do đó binary \code{os} được build
+với scheduler nhiều mức, paging và địa chỉ 64-bit. Makefile cung cấp:
+\begin{lstlisting}[language=make,caption={Các lệnh build và kiểm thử chính}]
 make clean
 make all
 make test
+make report
 \end{lstlisting}
 
+\section{CPU Scheduling}
+
+\subsection{Thiết kế Multi-Level Queue}
+Scheduler sử dụng \code{MAX_PRIO} bằng 140; mỗi priority $i$ có một queue riêng trong
+mảng \code{mlq_ready_queue}. Giá trị priority càng nhỏ thì mức ưu tiên càng cao.
+Số lượt scheduler được phép chọn queue $i$ trong một chu kỳ là:
+\[
+  slot[i] = MAX\_PRIO - i.
+\]
+Vì vậy queue priority 0 có 140 slot, trong khi queue priority 139 chỉ có một slot.
+Đây là weighted service: process ưu tiên cao nhận nhiều quantum hơn, nhưng process ưu
+tiên thấp vẫn có cơ hội sau khi các queue phía trên dùng hết ngân sách.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+ q/.style={draw,minimum width=4.3cm,minimum height=0.75cm,fill=blue!5},
+ arr/.style={-{Latex[length=2mm]},thick}
+]
+\node[q] (q0) {\code{queue[0]} -- slot 140};
+\node[q,below=4mm of q0] (q1) {\code{queue[1]} -- slot 139};
+\node[below=3mm of q1] (dots) {$\vdots$};
+\node[q,below=3mm of dots] (q139) {\code{queue[139]} -- slot 1};
+\node[draw,rounded corners,right=2cm of q1,minimum width=3.2cm,minimum height=1cm,
+      fill=orange!8] (cpu) {CPU khả dụng};
+\draw[arr] (q0.east) -- ++(0.8,0) |- (cpu.west);
+\draw[arr] (q1.east) -- (cpu.west);
+\draw[arr] (q139.east) -- ++(0.8,0) |- (cpu.west);
+\end{tikzpicture}
+\caption{Scheduler quét queue từ priority cao xuống thấp}
+\label{fig:mlq}
+\end{figure}
+
+\subsection{Queue FIFO và vòng đời process}
+\code{enqueue()} thêm PCB vào cuối queue. \code{dequeue()} lấy PCB ở index 0 rồi dịch
+các phần tử còn lại sang trái. Priority không được so sánh bên trong \code{dequeue()},
+vì MLQ đã tách các process theo priority; do đó FIFO trong từng bucket tạo round-robin
+giữa các process cùng mức.
+
+\begin{lstlisting}[language=C,caption={Logic cốt lõi của queue FIFO}]
+q->proc[q->size] = proc;
+q->size++;
+
+struct pcb_t *ret = q->proc[0];
+for (i = 0; i < q->size - 1; i++)
+    q->proc[i] = q->proc[i + 1];
+q->size--;
+\end{lstlisting}
+
+Khi loader gọi \code{add_proc()}, process được đưa vào queue tương ứng. Khi CPU gọi
+\code{get_proc()}, scheduler lấy PCB khỏi ready queue và thêm nó vào
+\code{running_list}. Hết quantum, \code{put_proc()} xóa PCB khỏi running list và trả
+nó về MLQ queue. Khi process hoàn tất, \code{finish_proc()} loại PCB khỏi running list
+trước khi CPU giải phóng tài nguyên.
+
+\subsection{Thuật toán chọn process}
+\begin{lstlisting}[language=C,caption={Pseudo-code của get\_mlq\_proc()}]
+lock(queue_lock)
+for prio = 0 .. MAX_PRIO - 1:
+    if queue[prio] is not empty and slot[prio] > 0:
+        proc = dequeue(queue[prio])
+        slot[prio]--
+        break
+
+if no process was selected:
+    reset every slot[prio] = MAX_PRIO - prio
+    repeat the scan once
+
+if proc != NULL:
+    enqueue(running_list, proc)
+unlock(queue_lock)
+\end{lstlisting}
+
+Toàn bộ thao tác ``chọn khỏi ready queue'' và ``đưa vào running list'' nằm trong cùng
+\code{queue_lock}. Vì vậy hai CPU không thể lấy cùng một PCB tại cùng thời điểm.
+
+\subsection{Timer và quantum}
+Mỗi CPU chạy một instruction trong mỗi time slot. Biến \code{time_left} được nạp bằng
+\code{time_slot} khi dispatch. Sau mỗi instruction, CPU giảm \code{time_left}; khi giá
+trị về 0, process chưa hoàn tất được đưa lại scheduler. Timer thread chờ toàn bộ event
+đánh dấu \code{done}, tăng global time rồi phát condition signal để bắt đầu slot kế tiếp.
+
+\subsection{Phân tích testcase scheduler}
+
+\subsubsection{Ưu tiên và preemption tại biên quantum}
+Test \code{sched_prio} dùng một CPU, quantum 2 và hai process:
+\begin{lstlisting}[caption={Cấu hình sched\_prio}]
+2 1 2
+0 s1 1
+1 s0 0
+\end{lstlisting}
+Process priority 1 được nạp trước. Process priority 0 đến sau nhưng không giành CPU
+giữa quantum đang chạy; nó được chọn ngay tại lần dispatch kế tiếp. Điều này mô phỏng
+preemption ở biên quantum, không phải preemption giữa một instruction.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.93\textwidth]{assets/sched_prio.png}
+\caption{Gantt diagram của testcase sched-prio}
+\label{fig:sched-prio}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Các mốc quan trọng của sched-prio}
+\begin{tabularx}{\textwidth}{p{2.4cm}p{3cm}X}
+\toprule
+Time slot & Event & Phân tích\\
+\midrule
+0--1 & PID 1, priority 1 được nạp và dispatch & Tại thời điểm đầu chỉ có PID 1 sẵn sàng\\
+1 & PID 2, priority 0 được nạp & PID 1 vẫn hoàn thành quantum hiện tại\\
+3 & PID 1 được put; PID 2 dispatch & Scheduler chọn priority 0 tại biên quantum\\
+3--18 & PID 2 tiếp tục được chọn & Queue priority 0 còn slot và có mức ưu tiên cao nhất\\
+18 & PID 2 hoàn thành; PID 1 quay lại & Process thấp hơn không bị mất, chỉ phải chờ\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Hết slot và reset chu kỳ}
+\code{sched_out_of_slot} tạo các priority 139, 138 và 137, tương ứng ngân sách 1,
+2 và 3 slot. Khi queue ưu tiên cao đã dùng hết slot, scheduler chuyển xuống queue kế
+tiếp dù process ưu tiên cao vẫn chưa hoàn thành. Sau khi tất cả queue có process đều
+không còn slot khả dụng, toàn bộ ngân sách được reset.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.93\textwidth]{assets/sched_out_of_slot.png}
+\caption{Gantt diagram minh họa giới hạn slot và reset chu kỳ}
+\label{fig:sched-slot}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Phân bổ slot trong sched-out-of-slot}
+\begin{tabular}{cccc}
+\toprule
+Priority & Ngân sách & Khoảng chạy đầu tiên & Lý do chuyển queue\\
+\midrule
+139 & 1 & slot 1--3 & Dùng hết một slot\\
+137 & 3 & slot 3--9 & Dùng hết ba slot\\
+138 & 2 & slot 9--13 & Dùng hết hai slot\\
+137 & reset & từ slot 13 & Tất cả queue khả dụng đã hết ngân sách\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Hai CPU hoạt động song song}
+\code{sched_2_cpu} có hai CPU và ba process. Trong một thời điểm, tối đa hai PCB
+khác nhau xuất hiện trên hai CPU. Thứ tự log giữa các thread có thể thay đổi qua từng
+lần chạy, nhưng các bất biến phải giữ nguyên: một PCB không chạy trên hai CPU cùng
+lúc, mỗi process tuân thủ quantum, và process mới được chọn từ MLQ dưới lock.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.93\textwidth]{assets/sched_2_cpu.png}
+\caption{Gantt diagram của scheduler hai CPU}
+\label{fig:sched-2cpu}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Một số bất biến quan sát được trong sched-2-CPU}
+\begin{tabularx}{\textwidth}{p{4cm}X}
+\toprule
+Bất biến & Bằng chứng từ log\\
+\midrule
+Không dispatch cùng PID cho hai CPU & Mỗi thời điểm CPU 0 và CPU 1 nhận PID khác nhau\\
+Process ưu tiên cao được chọn sớm & PID 3 priority 137 được CPU 1 lấy ngay sau khi PID 1 hết quantum\\
+Quantum được tôn trọng & Các dòng ``Put process'' xuất hiện ở biên hai time slot\\
+CPU tiếp tục khi CPU khác rảnh/dừng & Sau khi PID 2 và PID 3 hoàn tất, CPU 0 tiếp tục PID 1\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Trả lời câu hỏi: lợi ích của các chính sách MLQ}
+\begin{itemize}
+  \item \textbf{Priority queue:} giảm response time cho workload quan trọng bằng cách
+        quét từ priority nhỏ đến lớn.
+  \item \textbf{Weighted slot:} biến priority thành tỷ lệ CPU time thay vì cấm hoàn
+        toàn process thấp hơn.
+  \item \textbf{FIFO trong cùng queue:} tạo fairness giữa các process có cùng priority.
+  \item \textbf{Reset slot:} bảo đảm scheduler tiếp tục hoạt động khi các queue đang có
+        process đều đã hết ngân sách.
+  \item \textbf{Time slice:} ngăn một process giữ CPU vô thời hạn và tạo điểm chuyển
+        context có kiểm soát.
+\end{itemize}
+
+\subsection{Giới hạn scheduler}
+MLQ hiện tại không có feedback để thay đổi priority theo hành vi process. Khi một queue
+priority rất cao có nhiều process, process priority thấp vẫn có thể phải chờ lâu. Ngoài
+ra, \code{queue_empty()} đọc queue mà không lấy \code{queue_lock}; hàm này hiện không
+được dùng trong luồng chính, nhưng sẽ cần bảo vệ nếu được tái sử dụng.
+
+\subsection{Độ phức tạp và đặc tính fairness}
+\begin{table}[H]
+\centering
+\caption{Chi phí của các thao tác scheduler chính}
+\begin{tabularx}{\textwidth}{p{3.2cm}p{2.7cm}X}
+\toprule
+Thao tác & Độ phức tạp & Nhận xét\\
+\midrule
+\code{enqueue()} & $O(1)$ & Ghi PCB vào cuối mảng queue\\
+\code{dequeue()} & $O(n)$ & Dịch các phần tử còn lại sang trái\\
+Chọn MLQ process & $O(140+n)$ & Quét tối đa 140 queue rồi dequeue bucket được chọn\\
+Tra cứu PID & $O(P+140)$ & Duyệt process trong các queue dưới lock\\
+\bottomrule
+\end{tabularx}
+\end{table}
+Với quy mô bài tập, mảng queue giúp implementation trực quan và dễ kiểm chứng. Trong hệ
+thống lớn hơn, circular buffer sẽ giảm \code{dequeue()} xuống $O(1)$, còn PID lookup
+nên dùng hash table. Weighted slot giúp priority thấp vẫn nhận CPU sau khi các bucket
+đang hoạt động dùng hết ngân sách, nhưng không đưa ra upper bound chặt cho waiting time
+nếu process ưu tiên cao liên tục xuất hiện.
+
+\section{Quản lý bộ nhớ và phân tách User/Kernel}
+
+\subsection{Các tầng của memory subsystem}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+ layer/.style={draw,rounded corners,minimum width=11cm,minimum height=1cm,
+               align=center},
+ arr/.style={-{Latex[length=2mm]},thick}
+]
+\node[layer,fill=blue!5] (cpu) {CPU instruction: ALLOC / FREE / READ / WRITE / KMALLOC};
+\node[layer,fill=green!6,below=5mm of cpu] (lib) {User-side wrappers: \code{libmem.c} và \code{libstd.c}};
+\node[layer,fill=orange!7,below=5mm of lib] (sc) {Syscall 17: dispatcher và PID lookup};
+\node[layer,fill=purple!6,below=5mm of sc] (vm) {VMA, region table, page table: \code{mm-vm.c}, \code{mm64.c}};
+\node[layer,fill=red!5,below=5mm of vm] (phy) {Physical devices và free frame list: \code{mm-memphy.c}};
+\draw[arr] (cpu) -- (lib);
+\draw[arr] (lib) -- (sc);
+\draw[arr] (sc) -- (vm);
+\draw[arr] (vm) -- (phy);
+\end{tikzpicture}
+\caption{Luồng xử lý của memory subsystem}
+\label{fig:memory-layers}
+\end{figure}
+
+\subsection{Process memory layout}
+Mỗi process sở hữu một \code{mm_struct}. Trong đó \code{mmap} trỏ đến danh sách VMA;
+phiên bản hiện tại tập trung vào VMA 0. Một VMA mô tả miền liên tục
+$[vm\_start, vm\_end)$, còn \code{sbrk} đánh dấu biên đã sử dụng. Các allocation được
+nhận diện bằng integer region ID và lưu trong \code{symrgtbl[rgid]}; cách tra cứu này có
+độ phức tạp $O(1)$ và giới hạn tối đa 30 region trên mỗi process.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+ box/.style={draw,minimum width=10.8cm,minimum height=0.8cm,align=center},
+ lab/.style={font=\small}
+]
+\node[box,fill=green!7] (used) {Các region đã cấp phát trong \code{symrgtbl}};
+\node[box,fill=blue!5,below=0pt of used] (free) {Các khoảng trống trong \code{vm_freerg_list}};
+\node[box,fill=gray!8,below=0pt of free] (unused) {Không gian VMA chưa mở rộng};
+\node[lab,left=2mm of used] {\code{vm_start}};
+\node[lab,left=2mm of unused] {\code{sbrk}};
+\node[lab,right=2mm of unused] {\code{vm_end}};
+\end{tikzpicture}
+\caption{Mô hình vùng nhớ ảo của một process}
+\label{fig:vma-layout}
+\end{figure}
+
+\subsection{Physical memory và free frame list}
+\code{memphy_struct} được dùng cho cả RAM và SWAP. \code{storage} là mảng byte chứa
+dữ liệu; \code{maxsz} là dung lượng thiết bị; \code{free_fp_list} giữ các frame chưa
+được sử dụng. Khi format thiết bị, mỗi frame number được đưa vào linked list. Hai thao
+tác quan trọng là:
+\begin{itemize}
+  \item \code{MEMPHY_get_freefp()}: lấy head, cập nhật list và giải phóng node;
+  \item \code{MEMPHY_put_freefp()}: tạo node mới và đưa frame về đầu list.
+\end{itemize}
+Hai hàm đều dùng \code{memphy_lock}. Hàm
+\code{MEMPHY_get_contiguous_fps()} tìm đủ một dãy frame number liên tiếp cho
+kernel allocation. Việc tìm kiếm hiện có độ phức tạp cao vì với mỗi candidate, hàm duyệt
+lại toàn bộ list cho từng offset; đây là đánh đổi chấp nhận được trong simulator nhỏ.
+
+\notebox{\textbf{Hai granularity cùng tồn tại.} Framework cấp phát user/kernel memory
+vẫn dùng frame vật lý 256 byte theo \code{PAGING_PAGESZ}. Riêng yêu cầu MM64 dùng
+địa chỉ canonical 57-bit với offset 12 bit và bảng 512 entry, tức page-table granularity
+4 KiB. Test dummy mapping đánh giá cấu trúc MM64; các test ALLOC/READ/WRITE đánh giá
+framework memory hiện hữu. Báo cáo tách rõ hai phạm vi này để không đồng nhất sai hai
+khái niệm.}
+
+\subsection{Page Table Entry}
+Dù page-table hierarchy sử dụng pointer 64-bit, leaf PTE vẫn tận dụng layout trạng thái
+32-bit của framework gốc. Các bit quan trọng được trình bày trong
+Bảng~\ref{tab:pte-layout}.
+
+\begin{table}[H]
+\centering
+\caption{Các trường quan trọng của PTE}
+\begin{tabularx}{\textwidth}{p{2.8cm}p{2.5cm}X}
+\toprule
+Trường & Bit & Ý nghĩa\\
+\midrule
+FPN & 0--12 & Frame number khi page đang ở RAM\\
+SWPTYP & 0--4 & Loại swap device khi page được swap\\
+SWPOFF & 5--25 & Frame/offset trên swap device\\
+DIRTY & 28 & Page đã bị thay đổi\\
+SWAPPED & 30 & PTE mô tả page trên swap\\
+PRESENT & 31 & PTE hợp lệ/đã được thiết lập theo framework\\
+\bottomrule
+\end{tabularx}
+\label{tab:pte-layout}
+\end{table}
+
+Các macro \code{SETBIT}, \code{CLRBIT}, \code{SETVAL} và \code{GETVAL} thao tác trực
+tiếp trên bitmask. Cách biểu diễn giúp PTE gọn, nhưng cần thống nhất chặt chẽ ý nghĩa
+của tổ hợp PRESENT/SWAPPED; nếu không, page fault logic dễ diễn giải sai trạng thái.
+
+\subsection{ALLOC và mở rộng VMA}
+\code{__alloc()} trước hết gọi \code{get_free_vmrg_area()} để tái sử dụng vùng trống.
+Nếu không có vùng đủ lớn, \code{inc_vma_limit()} căn chỉnh kích thước lên page boundary,
+lấy các frame từ RAM, map chúng vào page table, cập nhật \code{vm_end} và \code{sbrk},
+sau đó trả virtual address về wrapper thông qua \code{sc_regs}.
+
+\begin{enumerate}
+  \item Xác thực \code{rgid}, kích thước và VMA.
+  \item Tìm free region phù hợp.
+  \item Nếu thất bại, tính số page cần thêm và lấy frame từ \code{free_fp_list}.
+  \item Ghi PTE cho từng page và cập nhật region table.
+  \item Ghi địa chỉ trả về vào register của process.
+\end{enumerate}
+
+\subsection{FREE và tái sử dụng region}
+\code{__free()} không lập tức thu hồi các physical frame của user allocation. Nó xóa
+entry tương ứng trong symbol region table và đưa vùng virtual address trở lại
+\code{vm_freerg_list}. Allocation sau có thể cắt một phần vùng này để dùng lại. Thiết
+kế làm giảm số lần mở rộng VMA, nhưng free-region list chưa thực hiện coalescing các
+vùng kề nhau nên có thể xuất hiện fragmentation trong danh sách.
+
+\subsection{Bằng chứng trạng thái data segment}
+Đề yêu cầu báo cáo thể hiện trạng thái cấp phát trong data segment. Test
+\code{os_mem_reuse} ghi trực tiếp ranh giới region trước và sau \code{FREE}:
+\begin{lstlisting}[caption={Cấp phát, giải phóng và tái sử dụng data region},numbers=none]
+MEM alloc PID 1 region 1 [0,100) size 100
+MEM free PID 1 region 1 [0,100)
+MEM alloc PID 1 region 2 [0,50) size 50
+MEM read PID 1 region 2 offset 49 value 0
+\end{lstlisting}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{assets/evidence_mem_reuse.jpg}
+\caption{Output thực tế chứng minh vùng data segment được giải phóng và tái sử dụng}
+\label{fig:evidence-mem-reuse}
+\end{figure}
+Region 2 bắt đầu lại tại địa chỉ 0, chứng minh allocator cắt và tái sử dụng vùng
+\code{[0,100)} vừa được trả về free-region list. Phép đọc offset 49 thành công xác nhận
+biên cuối hợp lệ của region mới là địa chỉ 49; offset từ 50 trở đi phải bị từ chối.
+
+\subsection{READ/WRITE và kiểm tra biên}
+\code{__read()} và \code{__write()} xác định region từ \code{rgid}, từ chối region rỗng
+hoặc offset nằm ngoài $[rg\_start,rg\_end)$. Virtual address được tách thành page number
+và offset; PTE cung cấp frame number; physical address cuối cùng là:
+\[
+  physical\_address = fpn \times PAGING\_PAGESZ + offset.
+\]
+Thao tác physical read/write tiếp tục đi qua syscall để kernel kiểm tra quyền sở hữu frame.
+
+\subsection{Không truyền PCB qua syscall}
+Đặc tả cấm userspace truyền trực tiếp con trỏ PCB. Trong implementation, wrapper chỉ
+dùng PCB cục bộ để lấy hai giá trị: kernel handle và PID. Hàm dispatcher nhận
+\code{krnl}, \code{pid}, syscall number và scalar registers:
+\begin{lstlisting}[language=C,caption={Giao diện syscall không truyền PCB}]
+int _syscall(struct krnl_t *krnl, uint32_t pid,
+             uint32_t nr, struct sc_regs *regs);
+
+return _syscall(proc->krnl, proc->pid, 17, &regs);
+\end{lstlisting}
+
+Kernel gọi \code{find_proc_by_pid()} để duyệt \code{running_list},
+\code{ready_queue}, \code{run_queue} và toàn bộ MLQ queues dưới \code{queue_lock}.
+PCB thực tế chỉ được lấy từ registry kernel, ngăn caller cung cấp một con trỏ PCB giả.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+ box/.style={draw,rounded corners,minimum width=3.5cm,minimum height=0.9cm,align=center},
+ arr/.style={-{Latex[length=2mm]},thick}
+]
+\node[box,fill=blue!5] (user) {User wrapper\\PID + scalar args};
+\node[box,fill=orange!7,right=1.2cm of user] (dispatch) {\code{_syscall()}\\dispatch theo number};
+\node[box,fill=green!7,right=1.2cm of dispatch] (lookup) {\code{find_proc_by_pid()}\\kernel registry};
+\node[box,fill=purple!6,below=8mm of lookup] (handler) {Kernel handler\\thao tác trên PCB thật};
+\draw[arr] (user) -- (dispatch);
+\draw[arr] (dispatch) -- (lookup);
+\draw[arr] (lookup) -- (handler);
+\draw[arr] (handler) -| (user);
+\end{tikzpicture}
+\caption{Luồng syscall dùng PID thay vì truyền PCB}
+\label{fig:pid-syscall}
+\end{figure}
+
+\subsection{Bảo vệ raw physical access}
+\code{caller_owns_phyaddr()} duyệt page table của caller để xác nhận frame chứa
+physical address đang được map và không ở trạng thái swapped. Nếu không, syscall từ
+chối truy cập. Test \code{os_mem_protection} cố đọc/ghi physical address 0 và nhận:
+\begin{lstlisting}[caption={Output của kiểm tra physical memory protection},numbers=none]
+Kernel denied PID 1 physical read at 0x0
+Kernel denied PID 1 physical write at 0x0
+\end{lstlisting}
+Test mạnh hơn \code{os_cross_pid_protection} cho PID 1 cấp region nằm trên frame vật
+lý 0, sau đó PID 2 cố đọc và ghi đúng frame đang tồn tại. Kernel vẫn từ chối:
+\begin{lstlisting}[caption={Protection giữa hai PID},numbers=none]
+MEM alloc PID 1 region 1 [0,100) size 100
+Kernel denied PID 2 physical read at 0x0
+Kernel denied PID 2 physical write at 0x0
+\end{lstlisting}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{assets/evidence_cross_pid.jpg}
+\caption{Output thực tế của kiểm tra quyền sở hữu physical frame giữa hai PID}
+\label{fig:evidence-cross-pid}
+\end{figure}
+Do đó protection không chỉ từ chối địa chỉ chưa map, mà còn kiểm tra ownership theo PID.
+
+\subsection{Kernel allocation và cache pool}
+\code{__kmalloc()} cấp một dãy physical frame liên tiếp bằng helper tìm contiguous
+frames, sau đó gán virtual address thuộc miền
+\code{PAGING_KMEM_BASE}. Kernel region được lưu trong \code{ksymrgtbl}, tách khỏi
+\code{symrgtbl} của userspace.
+
+Cache pool dùng một kernel allocation lớn làm backing storage. Với object size
+\code{align}, lần cấp phát thứ $i$ trả:
+\[
+  object\_address = pool.storage + i \times pool.align.
+\]
+Đây là mô hình slab/cache đơn giản: object có cùng kích thước được cấp tuần tự từ pool.
+Implementation không phải buddy allocator đầy đủ vì không chia và gộp block theo lũy
+thừa hai; thay vào đó nó tìm trực tiếp một chuỗi frame liên tiếp.
+
+\subsection{Copy giữa user và kernel}
+\code{copy_from_user} và \code{copy_to_user} sao chép từng byte qua các helper có
+kiểm tra region. Kernel không dereference trực tiếp một user pointer tùy ý. Cách làm này
+an toàn hơn về ownership, dù chi phí cao do lặp từng byte và nhiều lần page-table walk.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{assets/evidence_roundtrip.jpg}
+\caption{Output thực tế xác nhận byte 65 được bảo toàn qua user--kernel--user copy}
+\label{fig:evidence-roundtrip}
+\end{figure}
+Hai allocation tạo region nguồn \code{[0,16)} và region đích \code{[16,32)}. Giá trị
+65 đọc lại từ region 3 cho thấy chuỗi copy không làm thay đổi dữ liệu và region đích
+được kernel truy cập thông qua giao diện có kiểm tra.
+
+\subsection{Memory swapping và FIFO victim}
+\code{fifo_pgn} lưu các page number đã được map. \code{find_victim_page()} đi đến
+cuối linked list, lấy page cũ nhất và xóa node đó. Khi page đích không present,
+\code{pg_getpage()} dự kiến thực hiện chuỗi:
+\begin{enumerate}
+  \item chọn victim page và lấy một frame trên swap;
+  \item copy victim từ RAM sang swap, cập nhật victim PTE;
+  \item dùng frame RAM vừa giải phóng cho page đích;
+  \item nếu page đích từng nằm trên swap, copy dữ liệu trở lại RAM;
+  \item cập nhật PTE và đưa page đích vào FIFO list.
+\end{enumerate}
+Ý tưởng này phản ánh page replacement FIFO. Implementation tách riêng operation
+swap-out (RAM sang swap) và swap-in (swap sang RAM), đồng thời clear bit PRESENT khi
+PTE chuyển sang trạng thái swapped. Mức độ kiểm chứng được phân tích tại
+Mục~\ref{sec:swap-evaluation}.
+
+\subsection{Các bất biến và đường lỗi của memory subsystem}
+\begin{table}[H]
+\centering
+\caption{Bất biến quan trọng của quản lý bộ nhớ}
+\begin{tabularx}{\textwidth}{p{4cm}X X}
+\toprule
+Bất biến & Cơ chế duy trì & Bằng chứng\\
+\midrule
+Region hợp lệ nằm trong VMA & Kiểm tra \code{rgid}, ranh giới và overlap &
+\code{os_mem_reuse}\\
+Frame chỉ thuộc process được map & Duyệt page table trước raw physical I/O &
+\code{os_cross_pid_protection}\\
+User pointer không được kernel dereference trực tiếp & Copy qua helper có kiểm tra
+region & \code{os_mem_roundtrip}\\
+PTE swapped không đồng thời PRESENT & Helper đổi trạng thái clear bit PRESENT &
+Phân tích source và trạng thái PTE\\
+Page-table tree được thu hồi khi process kết thúc & Duyệt và giải phóng đệ quy &
+Các test tích hợp kết thúc không crash\\
+\bottomrule
+\end{tabularx}
+\end{table}
+Memory API trả lỗi sớm khi region ID không hợp lệ, offset vượt biên, địa chỉ không
+canonical hoặc caller không sở hữu physical frame. Việc kiểm tra trước thao tác ghi
+tránh trạng thái cập nhật một phần. Khi không lấy đủ frame, allocation hiện trả lỗi
+thay vì tạo mapping thiếu; hành vi này an toàn dù chưa tận dụng page replacement để
+tiếp tục cấp phát.
+
+\subsection{Trả lời câu hỏi: paging và continuous allocation}
+\begin{table}[H]
+\centering
+\caption{So sánh paging và continuous allocation}
+\begin{tabularx}{\textwidth}{p{3.4cm}X X}
+\toprule
+Tiêu chí & Paging & Continuous allocation\\
+\midrule
+Fragmentation & Loại bỏ external fragmentation, có internal fragmentation ở page cuối &
+Dễ external fragmentation\\
+Dịch địa chỉ & Cần page table và nhiều memory access & Đơn giản với base/limit\\
+Cấp vùng lớn & Không cần frame liên tiếp & Phải tìm block liên tiếp\\
+Protection & Có thể đặt quyền theo page & Thường đặt quyền theo cả segment/block\\
+Swapping & Có thể swap từng page & Thường phải di chuyển vùng lớn\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Trả lời câu hỏi: kết hợp segmentation và paging}
+Segmentation biểu diễn cấu trúc logic như code, data, heap và stack; paging cung cấp đơn
+vị quản lý vật lý cố định. Kết hợp hai cơ chế cho phép đặt protection theo segment nhưng
+map mỗi segment bằng các frame rời rạc, nhờ đó tránh yêu cầu một block physical liên
+tiếp và giảm external fragmentation. Trong simulator, VMA/region đóng vai trò gần với
+segmentation, còn page table thực hiện ánh xạ xuống frame.
+
+\section{Multi-Level Paging 64-bit}
+
+\subsection{Sơ đồ địa chỉ 57-bit canonical}
+Chế độ \code{MM64} dùng kiểu \code{addr_t = uint64_t}. Địa chỉ canonical 57-bit yêu
+cầu bit 63--57 là sign extension của bit 56. Năm index, mỗi index 9 bit, và offset 12
+bit tạo thành:
+\[
+\underbrace{PGD}_{9}~
+\underbrace{P4D}_{9}~
+\underbrace{PUD}_{9}~
+\underbrace{PMD}_{9}~
+\underbrace{PT}_{9}~
+\underbrace{Offset}_{12}.
+\]
+
+\begin{table}[H]
+\centering
+\caption{Phân chia bit của địa chỉ 57-bit}
+\begin{tabular}{lccc}
+\toprule
+Cấp & Dải bit & Số entry & Dung lượng một bảng\\
+\midrule
+PGD & 56--48 & 512 & 4096 byte\\
+P4D & 47--39 & 512 & 4096 byte\\
+PUD & 38--30 & 512 & 4096 byte\\
+PMD & 29--21 & 512 & 4096 byte\\
+PT  & 20--12 & 512 & 4096 byte\\
+Offset & 11--0 & 4096 vị trí & --\\
+\bottomrule
+\end{tabular}
+\label{tab:address-bits}
+\end{table}
+
+\subsection{Page-table walk}
+\code{walk_pte()} lần lượt đọc entry tại PGD, P4D, PUD, PMD rồi trả con trỏ tới PTE.
+Mỗi walk hợp lệ tăng \code{pgtable_walks} một lần và tăng
+\code{pgtable_accesses} năm lần. PGD được cấp lúc khởi tạo; các bảng con được cấp động
+khi walk tạo mapping. Với nhánh địa chỉ đầu tiên:
+\[
+  pgtable\_bytes = 5 \times 512 \times 8 = 20\,480~byte.
+\]
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.96,transform shape,
+ box/.style={draw,minimum width=2.2cm,minimum height=0.85cm,align=center,fill=blue!5},
+ arr/.style={-{Latex[length=2mm]},thick}
+]
+\node[box] (va) {Virtual\\address};
+\node[box,right=7mm of va] (pgd) {PGD\\index};
+\node[box,right=7mm of pgd] (p4d) {P4D\\index};
+\node[box,right=7mm of p4d] (pud) {PUD\\index};
+\node[box,right=7mm of pud] (pmd) {PMD\\index};
+\node[box,right=7mm of pmd] (pt) {PT\\index};
+\node[box,below=9mm of pt,fill=orange!8] (pte) {PTE: FPN};
+\node[box,left=7mm of pte,fill=green!7] (pa) {Physical\\address};
+\draw[arr] (va) -- (pgd);
+\draw[arr] (pgd) -- (p4d);
+\draw[arr] (p4d) -- (pud);
+\draw[arr] (pud) -- (pmd);
+\draw[arr] (pmd) -- (pt);
+\draw[arr] (pt) -- (pte);
+\draw[arr] (pte) -- (pa);
+\end{tikzpicture}
+\caption{Chuỗi truy cập của page-table walk năm cấp}
+\label{fig:page-walk}
+\end{figure}
+
+\subsection{Canonical-address validation}
+\code{paging64_is_canonical()} lấy phần upper bằng \code{addr >> 57} và bit sign bằng
+\code{(addr >> 56) \& 1}. Nếu sign bằng 0 thì upper phải bằng 0; nếu sign bằng 1 thì
+upper phải bằng \code{0x7f}. Test gửi địa chỉ \code{0x0100000000000000}, có bit cao
+không phải sign extension, và kernel trả:
+\begin{lstlisting}[caption={Kết quả test địa chỉ non-canonical},numbers=none]
+MM64 rejected non-canonical address 0x100000000000000
+\end{lstlisting}
+
+\subsection{Ví dụ tách index}
+Với địa chỉ canonical thấp \code{0x00000000001ab123}, các cấp trên đều có index 0,
+PT index bằng \code{0x1ab} và offset bằng \code{0x123}. Công thức tổng quát:
+\begin{align*}
+  pgd &= (addr \gg 48) \mathbin{\&} 0x1ff, &
+  p4d &= (addr \gg 39) \mathbin{\&} 0x1ff,\\
+  pud &= (addr \gg 30) \mathbin{\&} 0x1ff, &
+  pmd &= (addr \gg 21) \mathbin{\&} 0x1ff,\\
+  pt  &= (addr \gg 12) \mathbin{\&} 0x1ff, &
+  offset &= addr \mathbin{\&} 0xfff.
+\end{align*}
+Test tại \code{0x200000} cho index PMD bằng 1, chứng minh implementation không bị giới
+hạn ở branch index 0.
+
+\subsection{\texorpdfstring{\texttt{vmap\_pgd\_memset}}{vmap-pgd-memset}}
+Theo đề, hàm này dùng để mô phỏng việc chạm vào page-directory trong không gian địa chỉ
+lớn mà không cần cấp frame vật lý thật. Implementation hiện tại kiểm tra canonical
+address, alignment và range, sau đó cấp các bảng con còn thiếu, walk đến từng PTE và đặt
+giá trị 0. Vì vậy testcase chứng minh được canonical validation lẫn sparse allocation ở
+địa chỉ xa.
+
+\subsection{Lợi ích và chi phí của N-level paging}
+Nếu dùng flat page table cho toàn bộ không gian 57-bit với page 4 KiB, số page lý thuyết
+là $2^{45}$. Với mỗi PTE 8 byte, flat table cần:
+\[
+  2^{45} \times 8 = 2^{48}\text{ byte} = 256\text{ TiB}.
+\]
+Hierarchical paging cho phép chỉ tạo các bảng con cho vùng đang dùng. Đổi lại, một TLB
+miss có thể cần năm lần đọc bảng trước khi truy cập dữ liệu thật. TLB và caching là các
+cơ chế thường dùng để giảm chi phí này.
+
+\subsection{Hoàn thiện sparse allocation}
+\code{init_mm()} chỉ cấp PGD ban đầu. Hàm \code{walk_pte()} nhận cờ tạo mới và dùng
+\code{calloc()} để cấp P4D, PUD, PMD hoặc PT còn thiếu. Khi process kết thúc, cây được
+duyệt đệ quy để hoàn trả frame user/swap rồi giải phóng mọi bảng con. Do đó:
+\begin{itemize}
+  \item địa chỉ thấp đầu tiên dùng 20\,480 byte cho năm bảng;
+  \item mapping tại \code{0x200000} tạo thêm một PT, nâng tổng lên 24\,576 byte;
+  \item ownership check và cleanup duyệt cây động thay vì giả định mảng PT nhánh 0.
+\end{itemize}
+
+\subsection{Phân tích định lượng dung lượng page table}
+Sparse allocation làm dung lượng phụ thuộc số branch thực sự được chạm thay vì kích
+thước toàn bộ virtual address space:
+\begin{table}[H]
+\centering
+\caption{Dung lượng page table theo các mapping quan sát được}
+\begin{tabularx}{\textwidth}{p{3.8cm}p{3cm}X}
+\toprule
+Trạng thái & Dung lượng & Giải thích\\
+\midrule
+Chỉ có PGD sau \code{init_mm()} & 4096 byte & Chưa có bảng con\\
+Mapping đầu tiên tại \code{0x0} & 20\,480 byte & PGD, P4D, PUD, PMD và PT\\
+Thêm mapping tại \code{0x200000} & 24\,576 byte & Dùng chung cấp trên, tạo thêm một PT\\
+Thêm high-canonical branch & 40\,960 byte & Tạo đường đi mới từ PGD index 256\\
+\bottomrule
+\end{tabularx}
+\end{table}
+Một mapping xa không buộc hệ thống cấp toàn bộ entry trung gian cho vùng chưa sử dụng.
+Kết quả tăng theo từng branch là bằng chứng định lượng cho lợi ích của hierarchical
+paging đối với không gian địa chỉ dài.
+
+\section{Synchronization và System Call}
+
+\subsection{Các tài nguyên dùng chung}
+\begin{table}[H]
+\centering
+\caption{Tài nguyên dùng chung và cơ chế bảo vệ}
+\begin{tabularx}{\textwidth}{p{3.4cm}p{3.3cm}X}
+\toprule
+Tài nguyên & Lock / primitive & Mục đích\\
+\midrule
+MLQ queues, running list & \code{queue_lock} & Tránh hai CPU lấy cùng PCB; bảo vệ PID lookup\\
+Free physical frame list & \code{memphy_lock} & Tránh cấp hoặc free cùng frame đồng thời\\
+VMA, region table, kernel cache & \code{mmvm_lock} & Tuần tự hóa alloc/free và cập nhật metadata\\
+Timer events & mutex + condition variable & Barrier giữa timer, loader và CPU\\
+Loader completion & \code{atomic_int done} & Báo CPU dừng khi không còn process mới\\
+\bottomrule
+\end{tabularx}
+\label{tab:locks}
+\end{table}
+
+\subsection{Ví dụ race condition nếu thiếu lock}
+Nếu hai CPU cùng đọc head của \code{free_fp_list} trước khi một CPU cập nhật head,
+cả hai có thể nhận cùng một frame. Hai page table khác nhau sau đó cùng map đến frame
+đó, gây rò rỉ dữ liệu và corruption. Tương tự, nếu dequeue không atomic, hai CPU có thể
+cùng nhận một PCB và tăng program counter song song.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+ event/.style={draw,rounded corners,minimum width=4.3cm,minimum height=0.75cm,
+               align=center},
+ arr/.style={-{Latex[length=2mm]},thick}
+]
+\node[event,fill=red!7] (a) {CPU 0 đọc head = frame 5};
+\node[event,fill=red!7,right=1cm of a] (b) {CPU 1 đọc head = frame 5};
+\node[event,fill=orange!8,below=8mm of a] (c) {CPU 0 map page A $\rightarrow$ frame 5};
+\node[event,fill=orange!8,below=8mm of b] (d) {CPU 1 map page B $\rightarrow$ frame 5};
+\node[event,fill=red!12,below=8mm of $(c)!0.5!(d)$] (e) {Hai process ghi đè dữ liệu của nhau};
+\draw[arr] (a) -- (c);
+\draw[arr] (b) -- (d);
+\draw[arr] (c) -- (e);
+\draw[arr] (d) -- (e);
+\end{tikzpicture}
+\caption{Race condition giả định khi free frame list không được khóa}
+\label{fig:race}
+\end{figure}
+
+\subsection{Đánh giá phạm vi lock}
+Thiết kế dùng các global mutex đơn giản và dễ chứng minh tính đúng đắn. Đổi lại, mọi
+process đều bị tuần tự hóa khi thao tác memory metadata, kể cả khi chúng có address
+space riêng. Một cải tiến hợp lý là dùng lock theo \code{mm_struct} kết hợp lock riêng
+cho physical allocator, giúp tăng parallelism mà vẫn giữ ownership rõ ràng.
+
+\subsection{System-call table và dispatcher}
+File \code{syscall.tbl} định nghĩa ba syscall:
+\begin{table}[H]
+\centering
+\caption{Các syscall trong phiên bản hiện tại}
+\begin{tabularx}{\textwidth}{p{2cm}p{3cm}X}
+\toprule
+Number & Tên & Chức năng\\
+\midrule
+0 & \code{listsyscall} & In toàn bộ syscall table\\
+17 & \code{memmap} & Dispatcher cho các memory operation\\
+440 & \code{xxx} & Syscall minh họa nhận tham số scalar\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Macro \code{__SYSCALL} được dùng hai lần: một lần sinh declaration cho handler, một
+lần sinh các \code{case} trong switch dispatcher. Cách này giữ syscall number và handler
+mapping trong một nguồn dữ liệu duy nhất.
+
+\subsection{Unified memory syscall}
+Syscall 17 dùng \code{regs->a1} làm operation code. Các operation gồm map, tăng VMA,
+swap copy, physical I/O, alloc/free/read/write, kmalloc, cache create/alloc và copy giữa
+user/kernel. Ưu điểm là tất cả memory operation đi qua một điểm kiểm tra PID và quyền;
+nhược điểm là handler có switch lớn và operation-specific argument convention.
+
+\subsection{Trả lời câu hỏi: unified syscall interface}
+\textbf{Ưu điểm:}
+\begin{itemize}
+  \item tạo abstraction ổn định giữa chương trình user và implementation kernel;
+  \item tập trung validation, protection và error handling;
+  \item giảm coupling và giúp thay đổi implementation mà không đổi user API;
+  \item tăng portability khi các tài nguyên dùng cùng mô hình read/write/free.
+\end{itemize}
+\textbf{Nhược điểm:}
+\begin{itemize}
+  \item trap, dispatch và validation tạo overhead;
+  \item một giao diện quá tổng quát có thể che mất tính năng chuyên biệt;
+  \item error code tổng quát khó biểu diễn đủ ngữ cảnh;
+  \item switch dispatcher lớn làm tăng độ phức tạp bảo trì.
+\end{itemize}
+
+\subsection{Trả lời câu hỏi: syscall chạy quá lâu}
+Hệ điều hành thực tế dùng timer interrupt hoặc watchdog để phát hiện tác vụ giữ CPU quá
+lâu. Với preemptible kernel, scheduler có thể tạm dừng tác vụ tại điểm an toàn. Nếu syscall
+đang chờ I/O, process nên chuyển sang blocked state để CPU phục vụ process khác. Nếu
+tác vụ vi phạm timeout hoặc mắc deadlock không thể phục hồi, kernel có thể trả lỗi, gửi
+signal, kết thúc process hoặc kích hoạt watchdog recovery. Kernel code cũng phải tránh
+giữ lock trong thao tác dài vì điều đó có thể làm toàn hệ thống mất tiến triển.
+
+\subsection{Trả lời câu hỏi: hậu quả khi thiếu synchronization}
+Thiếu synchronization có thể gây lost update, duplicate allocation, double-free, PCB chạy
+trên nhiều CPU, page table bị ghi đè và output không tất định theo cách không giải thích
+được. Trong simulator, hai ví dụ trực tiếp nhất là cùng dequeue một PCB và cùng lấy head
+của free frame list. Lock không làm thứ tự log hoàn toàn cố định, nhưng bảo vệ các bất
+biến dữ liệu.
+
+\section{Kiểm thử và phân tích kết quả}
+
+\subsection{Chiến lược kiểm thử}
+Script \code{run.sh} chạy 22 cấu hình, bao phủ scheduler, paging, syscall, canonical
+address, data-region reuse, cross-PID protection và copy user--kernel. Sau khi chạy, script
+\code{tests/assert\_outputs.sh} kiểm tra các bất biến semantic thay vì so khớp toàn bộ
+log đa luồng. Ba testcase scheduler tự tạo còn được chuyển thành Gantt diagram. Build
+sạch bằng \code{make clean \&\& make all} hoàn tất với \code{-Wall} mà không warning.
+
+\subsection{Traceability từ yêu cầu đến testcase}
+\begin{table}[H]
+\centering
+\caption{Liên kết yêu cầu, rủi ro và bằng chứng kiểm thử}
+\begin{tabularx}{\textwidth}{p{3.1cm}X X}
+\toprule
+Yêu cầu & Rủi ro cần phát hiện & Test/bằng chứng chính\\
+\midrule
+MLQ nhiều CPU & Hai CPU lấy cùng PCB; priority hoặc slot sai &
+\code{sched_prio}, \code{sched_out_of_slot}, \code{sched_2_cpu}\\
+Data-segment allocation & Không tái sử dụng vùng free; sai ranh giới &
+\code{os_mem_reuse}, Hình~\ref{fig:evidence-mem-reuse}\\
+User/kernel separation & Caller đọc frame thuộc PID khác &
+\code{os_cross_pid_protection}, Hình~\ref{fig:evidence-cross-pid}\\
+Copy user/kernel & Dữ liệu thay đổi hoặc truy cập sai region &
+\code{os_mem_roundtrip}, Hình~\ref{fig:evidence-roundtrip}\\
+Multi-level paging & Chỉ chạy branch 0; nhận địa chỉ non-canonical &
+\code{os_mm64_canonical}, Hình~\ref{fig:evidence-mm64}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{longtable}{p{0.39\textwidth}p{0.22\textwidth}p{0.29\textwidth}}
+\caption{Nhóm testcase hiện có}\label{tab:tests}\\
+\toprule
+Test & Thành phần & Mục tiêu\\
+\midrule
+\endfirsthead
+\toprule
+Test & Thành phần & Mục tiêu\\
+\midrule
+\endhead
+\code{sched}, \code{sched_0}, \code{sched_1} & Scheduler & MLQ cơ bản và multi-CPU\\
+\code{sched_prio} & Scheduler & Process ưu tiên cao đến sau\\
+\code{sched_out_of_slot} & Scheduler & Giới hạn slot và reset\\
+\code{sched_2_cpu} & Scheduler & Hai CPU lấy PCB khác nhau\\
+\code{os_0/1/2_mlq_paging} & Integration & Scheduler kết hợp paging\\
+\code{os_1_mlq_paging_small_1K} & Memory & RAM nhỏ và thiếu frame\\
+\code{os_1_mlq_paging_small_4K} & Memory & RAM nhỏ và thiếu frame\\
+\code{os_syscall}, \code{os_sc}, \code{os_syscall_list} & Syscall & Dispatch và handler\\
+\code{os_mm64_canonical} & MM64 & Cấp branch PMD khác 0; từ chối non-canonical\\
+\code{os_mem_reuse} & Memory & Cấp phát, free và tái sử dụng data region\\
+\code{os_mem_roundtrip} & Memory & Copy user--kernel--user giữ nguyên byte\\
+\code{os_mem_protection} & Protection & Từ chối raw physical access\\
+\code{os_cross_pid_protection} & Protection & Từ chối truy cập frame thuộc PID khác\\
+\bottomrule
+\end{longtable}
+
+\subsection{Kết quả kiểm thử thực tế}
+\begin{table}[H]
+\centering
+\caption{Kết quả kiểm chứng tại commit báo cáo}
+\begin{tabularx}{\textwidth}{X p{2.6cm}X}
+\toprule
+Lệnh / kịch bản & Kết quả & Ghi chú\\
+\midrule
+\code{make clean \&\& make all} & PASS & Build sạch, không warning từ \code{-Wall}\\
+\code{make test} & PASS & 22 kịch bản và toàn bộ semantic assertion qua\\
+\code{sched_2_cpu} lặp 5 lần & PASS & Không crash hoặc deadlock quan sát được\\
+\code{os_2_mlq_paging} lặp 3 lần & PASS & Không crash hoặc deadlock quan sát được\\
+\code{make report} & PASS & LuaLaTeX tạo PDF thành công\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.48\textwidth]{assets/evidence_all_tests.jpg}
+\caption{Output thực tế của 22 testcase và semantic assertions}
+\label{fig:evidence-all-tests}
+\end{figure}
+Hình~\ref{fig:evidence-all-tests} cho thấy toàn bộ cấu hình trong \code{run.sh} đã được
+thực thi, bao gồm scheduler, paging, syscall, protection và MM64. Dòng kết thúc
+\code{All semantic output assertions passed.} quan trọng hơn việc tiến trình chỉ thoát
+với mã 0, vì nó xác nhận các bất biến đầu ra được mô tả trong
+\code{tests/assert\_outputs.sh}.
+
+\subsection{Các output thực nghiệm tiêu biểu}
+\begin{lstlisting}[caption={Syscall memory làm tăng thống kê page-table walk},numbers=none]
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=1 accesses=5 bytes=20480
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=3 accesses=15 bytes=20480
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=5 accesses=25 bytes=20480
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0] walks=7 accesses=35 bytes=20480
+\end{lstlisting}
+Mỗi memory operation cần một hoặc nhiều PTE access. Output tăng đều theo quan hệ năm
+access trên một walk.
+
+\begin{lstlisting}[caption={Sparse branch và round-trip memory},numbers=none]
+MM64 mapped 1 dummy page(s) at 0x200000
+MM64 pid=1 va=0x200000 indexes=[0,0,0,1,0] walks=2 accesses=10 bytes=24576
+MM64 pid=1 va=0xff00000000000000 indexes=[256,0,0,0,0]
+MEM read PID 1 region 3 offset 0 value 65
+All semantic output assertions passed.
+\end{lstlisting}
+Dung lượng tăng từ 20\,480 lên 24\,576 byte đúng bằng một bảng PT mới; PGD index 256
+chứng minh nửa high-canonical cũng được chấp nhận. Giá trị 65 đọc lại chứng minh chuỗi
+copy user--kernel--user bảo toàn dữ liệu.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{assets/evidence_mm64.jpg}
+\caption{Output thực tế của sparse multi-level paging và canonical-address validation}
+\label{fig:evidence-mm64}
+\end{figure}
+Ảnh terminal thể hiện ba trường hợp tách biệt. Địa chỉ \code{0x0} dùng nhánh đầu tiên
+và cần một walk với năm access; địa chỉ \code{0x200000} tạo nhánh PMD index 1 nên dung
+lượng page table tăng thêm 4096 byte; địa chỉ high-canonical có PGD index 256 vẫn hợp
+lệ. Ngược lại, địa chỉ \code{0x100000000000000} không thỏa sign extension của bit 56
+nên bị từ chối trước khi page-table walk diễn ra.
+
+\begin{lstlisting}[caption={Các negative test kiểm tra protection},numbers=none]
+Kernel denied PID 1 physical read at 0x0
+Kernel denied PID 1 physical write at 0x0
+Kernel denied PID 2 physical read at 0x0
+Kernel denied PID 2 physical write at 0x0
+MM64 rejected non-canonical address 0x100000000000000
+\end{lstlisting}
+Negative test quan trọng vì nó chứng minh hệ thống không chỉ chạy happy path mà còn từ
+chối input vi phạm. Trong cross-PID test, address 0 là frame hợp lệ của PID 1 nhưng vẫn
+bị từ chối khi PID 2 truy cập.
+
+\subsection{Phân tích output MM64}
+Khi process kết thúc, \code{print_pgtbl()} in PID, index của địa chỉ bắt đầu, số walk,
+số access và số byte page table. Ví dụ:
+\begin{lstlisting}[caption={Định dạng thống kê multi-level paging},numbers=none]
+MM64 pid=1 va=0x0 indexes=[0,0,0,0,0]
+walks=7 accesses=35 bytes=20480
+\end{lstlisting}
+Quan hệ \code{accesses = 5 * walks} phù hợp với page-table walk năm cấp. Con số
+20\,480 byte là tổng năm bảng của nhánh đầu tiên; con số tăng theo số bảng con được cấp
+động. Nếu tính cả lần truy cập dữ liệu vật lý sau walk, một read/write thành công cần
+thêm một memory access ngoài năm lần đọc bảng.
+
+\subsection{Điểm mạnh của testcase hiện tại}
+\begin{itemize}
+  \item Bao phủ nhiều cấu hình CPU, priority và RAM size.
+  \item Có test bảo vệ âm tính: physical access bị từ chối và địa chỉ non-canonical.
+  \item Có assertion cho branch cấp cao, tái sử dụng data region, cross-PID protection
+        và giá trị đọc lại sau copy user--kernel.
+  \item Gantt diagram giúp đối chiếu scheduler bằng trực quan.
+  \item Test tích hợp chạy scheduler, syscall và memory trong cùng binary.
+\end{itemize}
+
+\subsection{Giới hạn của testcase hiện tại}
+\notebox{\code{run.sh} ghi log vào \code{output/*.output}, sau đó
+\code{tests/assert\_outputs.sh} kiểm tra các chuỗi bất biến: syscall table, protection
+denial, cross-PID ownership, data-region reuse, non-canonical rejection, branch PMD
+khác 0 và giá trị round-trip. Cách này chịu được thay đổi thứ tự log giữa các CPU.}
+
+Các khoảng trống quan trọng:
+\begin{itemize}
+  \item chưa có test xác nhận swap-out rồi swap-in giữ nguyên dữ liệu;
+  \item chưa có stress test nhiều CPU và hàng trăm process;
+  \item chưa chạy ThreadSanitizer hoặc AddressSanitizer.
+\end{itemize}
+
+\subsection{Đánh giá cơ chế swapping}
+\label{sec:swap-evaluation}
+Code có FIFO victim list, PTE swapped state và hai hàm copy riêng:
+\code{__mm_swap_page()} cho RAM sang swap, \code{__mm_swap_page_in()} cho swap sang
+RAM. Syscall operation 15 gọi đúng chiều swap-in; PTE swapped không còn mang bit
+PRESENT. Tuy nhiên khi \code{ALLOC} không lấy đủ frame, \code{vm_map_ram()} hiện trả
+lỗi thay vì chủ động swap victim để hoàn tất allocation. Vì page replacement 64-bit là
+optional theo đề và phụ thuộc yêu cầu giảng viên, báo cáo chỉ kết luận rằng primitive
+swap-in/out đã có, còn replacement end-to-end chưa hoàn chỉnh hoặc được kiểm chứng.
+
+\section{Các quyết định thiết kế, giới hạn và hướng cải tiến}
+
+\subsection{Các quyết định thiết kế chính}
+\begin{enumerate}
+  \item \textbf{Một \code{mm_struct} trên mỗi process:} giữ address space tách biệt,
+        tránh context switch ghi đè một kernel-global \code{mm}.
+  \item \textbf{PID lookup trong kernel:} tuân thủ yêu cầu không truyền PCB.
+  \item \textbf{FIFO trong từng MLQ bucket:} đơn giản và công bằng giữa cùng priority.
+  \item \textbf{Global locks:} ưu tiên tính đúng đắn và dễ kiểm chứng hơn parallelism tối đa.
+  \item \textbf{Sparse page table cấp động:} chỉ cấp bảng con khi mapping đi qua branch
+        tương ứng, đồng thời giải phóng đệ quy khi process kết thúc.
+\end{enumerate}
+
+\subsection{Giới hạn kỹ thuật đã xác định}
+\begin{table}[H]
+\centering
+\caption{Giới hạn và tác động}
+\begin{tabularx}{\textwidth}{p{3.7cm}X X}
+\toprule
+Giới hạn & Tác động & Hướng xử lý\\
+\midrule
+Page replacement chưa có test end-to-end & Có thể còn lỗi khi RAM thật sự cạn & Thêm testcase ép swap và xác nhận dữ liệu\\
+Free-region list không coalescing & Fragmentation metadata & Sắp xếp và gộp vùng kề nhau\\
+Global \code{mmvm_lock} & Giảm song song giữa process & Lock theo \code{mm_struct}\\
+Build artifacts được track trong Git & Conflict và repository nhiễu & Bỏ \code{obj/*.o}, binary và \code{.DS_Store}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Hướng cải tiến}
+\begin{itemize}
+  \item Thêm testcase end-to-end cho swap-out/swap-in, sau đó bổ sung Clock hoặc LRU.
+  \item Giải phóng sớm branch page-table đã rỗng thay vì chờ process kết thúc.
+  \item Thêm TLB mô phỏng để đo hit/miss và giảm page-table access.
+  \item Viết test harness phân tích output thành event, sau đó kiểm tra scheduler invariants.
+  \item Dùng sanitizer để phát hiện race, use-after-free và memory leak.
+  \item Thu hẹp lock granularity và ghi tài liệu lock ordering để tránh deadlock.
+\end{itemize}
+
+\subsection{Đối chiếu kết quả với tiêu chí demonstration}
+Phần scheduling được chứng minh bằng Gantt diagram và các bất biến multi-CPU. Phần MMU
+và phân tách user/kernel được chứng minh bằng PID lookup, data-region reuse, copy
+round-trip và cross-PID denial. Phần multi-level paging được chứng minh bằng năm index,
+quan hệ năm access trên một walk, mức tăng dung lượng khi tạo branch mới và việc từ chối
+địa chỉ non-canonical. Ba nhóm bằng chứng này tương ứng trực tiếp với ba thành phần
+demonstration trong rubric; page replacement end-to-end được ghi nhận riêng như một
+giới hạn optional thay vì được trình bày như chức năng đã hoàn chỉnh.
+
 \section{Kết luận}
-Hệ thống hoàn thành MLQ scheduling, unified syscall bằng PID, bảo vệ user/kernel
-space, cấp phát user/kernel memory, paging 64-bit năm cấp, canonical validation
-và thống kê page-table. Output đa CPU có thể khác thứ tự giữa các lần chạy nhưng
-mọi kết quả phải tuân theo priority, time slice và các điều kiện bảo vệ đã mô tả.
+Bài tập đã tích hợp loader, MLQ scheduler nhiều CPU, timer, syscall, quản lý region,
+frame và page table trong một simulator thống nhất. Implementation duy trì ranh giới
+user/kernel bằng PID lookup và frame ownership; hỗ trợ canonical validation, sparse
+page-table walk năm cấp cùng thống kê access/storage. Kết quả build, 22 testcase và
+semantic assertions đều thành công, cung cấp bằng chứng cho scheduler, protection,
+data-region reuse, syscall, sparse paging và round-trip memory.
 
 \end{document}

@@ -215,7 +215,11 @@ int liballoc(struct pcb_t *proc, addr_t size, uint32_t reg_index)
     return -1;
   proc->regs[reg_index] = regs.a4;
 #ifdef IODUMP
-  /* TODO dump IO content (if needed) */
+  printf("MEM alloc PID %u region %u [%llu,%llu) size %llu\n",
+         proc->pid, reg_index,
+         (unsigned long long)proc->mm->symrgtbl[reg_index].rg_start,
+         (unsigned long long)proc->mm->symrgtbl[reg_index].rg_end,
+         (unsigned long long)size);
 #ifdef PAGETBL_DUMP
   print_pgtbl(proc, 0, -1); // print max TBL
 #endif
@@ -234,16 +238,22 @@ int liballoc(struct pcb_t *proc, addr_t size, uint32_t reg_index)
 int libfree(struct pcb_t *proc, uint32_t reg_index)
 {
   struct sc_regs regs = {0};
+  addr_t start;
+  addr_t end;
 
   if (!valid_region_id((int)reg_index))
     return -1;
+  start = proc->mm->symrgtbl[reg_index].rg_start;
+  end = proc->mm->symrgtbl[reg_index].rg_end;
   regs.a1 = SYSMEM_FREE_OP;
   regs.a2 = 0;
   regs.a3 = reg_index;
   if (mem_syscall(proc, &regs) != 0)
     return -1;
 #ifdef IODUMP
-  /* TODO dump IO content (if needed) */
+  printf("MEM free PID %u region %u [%llu,%llu)\n",
+         proc->pid, reg_index, (unsigned long long)start,
+         (unsigned long long)end);
 #ifdef PAGETBL_DUMP
   print_pgtbl(proc, 0, -1); // print max TBL
 #endif
@@ -303,7 +313,7 @@ int pg_getpage(struct mm_struct *mm, int pgn, int *fpn, struct pcb_t *caller)
     if (pte & PAGING_PTE_SWAPPED_MASK) {
         addr_t tgt_swpfpn = PAGING_SWP(pte);
         
-        regs.a1 = SYSMEM_SWP_OP;
+        regs.a1 = SYSMEM_SWP_IN_OP;
         regs.a2 = tgt_swpfpn; /* Lấy từ SWAP... */
         regs.a3 = tgtfpn;     /* ...bỏ vào RAM */
         _syscall(caller->krnl, caller->pid, 17, &regs);
@@ -429,7 +439,8 @@ int libread(
 
   *destination = regs.a4;
 #ifdef IODUMP
-  /* TODO dump IO content (if needed) */
+  printf("MEM read PID %u region %u offset %llu value %u\n",
+         proc->pid, source, (unsigned long long)offset, *destination);
 #ifdef PAGETBL_DUMP
   print_pgtbl(proc, 0, -1); // print max TBL
 #endif
@@ -832,6 +843,10 @@ int __write_user_mem(struct pcb_t *caller, int vmaid, int rgid, addr_t offset, B
 int free_pcb_memph(struct pcb_t *caller)
 {
   pthread_mutex_lock(&mmvm_lock);
+#ifdef MM64
+  paging64_release_user_frames(caller->mm, caller->krnl->mram,
+                               caller->krnl->active_mswp);
+#else
   int pagenum, fpn;
   uint32_t pte;
 
@@ -850,6 +865,7 @@ int free_pcb_memph(struct pcb_t *caller)
       MEMPHY_put_freefp(caller->krnl->mram, fpn);
     }
   }
+#endif
 
   pthread_mutex_unlock(&mmvm_lock);
   return 0;

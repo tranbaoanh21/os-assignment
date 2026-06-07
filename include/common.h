@@ -108,7 +108,7 @@ struct pcb_t
 	uint32_t priority;	 // Default priority, this legacy process based (FIXED)
 	char path[100];
 	struct code_seg_t *code; // Code segment
-	addr_t regs[10];	 // Registers, store address of allocated regions
+	addr_t regs[PAGING_MAX_SYMTBL_SZ]; // Registers, indexed like memory regions
 	uint32_t pc;		 // Program pointer, point to the next instruction
 #ifdef MLQ_SCHED
 	// Priority on execution (if supported), on-fly aka. changeable

@@ -18,6 +18,9 @@ for test in \
   os_syscall \
   os_syscall_list \
   os_mm64_canonical \
+  os_cross_pid_protection \
+  os_mem_reuse \
+  os_mem_roundtrip \
   os_mem_protection \
   sched \
   sched_0 \
@@ -29,6 +32,8 @@ do
   echo "Running $test"
   ./os "$test" > "output/$test.output"
 done
+
+sh tests/assert_outputs.sh
 
 for test in sched_prio sched_out_of_slot sched_2_cpu
 do

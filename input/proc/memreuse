@@ -1,0 +1,5 @@
+20 4
+alloc 100 1
+free 1
+alloc 50 2
+read 2 49 3

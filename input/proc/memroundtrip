@@ -1,0 +1,9 @@
+20 8
+alloc 16 1
+write 65 1 0
+copy_from_user 1 2 0 1
+alloc 16 3
+copy_to_user 2 3 0 1
+read 3 0 4
+kmem_cache_create 64 16 5
+kmem_cache_alloc 6 5

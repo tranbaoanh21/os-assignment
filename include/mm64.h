@@ -10,7 +10,7 @@
 #define GENMASK64(h, l) \
 	(((~0ULL) << (l)) & (~0ULL >> (MM64_BITS_PER_LONG  - (h) - 1)))
 
-#define PAGING64_MAX_PGN  (DIV_ROUND_UP(BIT_ULL(21),PAGING64_PAGESZ))
+#define PAGING64_MAX_PGN  BIT_ULL(45)
 #define PAGING64_PAGE_ALIGNSZ(sz) (DIV_ROUND_UP(sz,PAGING64_PAGESZ)*PAGING64_PAGESZ)
 #define PAGING64_ENTRIES 512
 
@@ -65,5 +65,9 @@
 
 
 int paging64_is_canonical(addr_t addr);
+int paging64_owns_fpn(struct mm_struct *mm, addr_t fpn);
+int paging64_release_user_frames(struct mm_struct *mm,
+                                 struct memphy_struct *mram,
+                                 struct memphy_struct *active_mswp);
 
 #endif
