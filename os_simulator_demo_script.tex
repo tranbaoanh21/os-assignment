@@ -1,0 +1,1123 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath,amssymb}
+\usepackage{array,tabularx,longtable,booktabs,multirow}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{hyperref}
+\usepackage{tocloft}
+
+\geometry{left=2.4cm,right=2.1cm,top=2.6cm,bottom=2.5cm,headheight=35pt}
+\hypersetup{unicode=true,hidelinks}
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlist[itemize]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=3pt,topsep=3pt}
+\renewcommand{\arraystretch}{1.25}
+
+\definecolor{bkblue}{HTML}{123A73}
+\definecolor{bklight}{HTML}{EAF2FB}
+\definecolor{bkgold}{HTML}{8A5A00}
+\definecolor{codebg}{HTML}{F5F5F5}
+\definecolor{codegreen}{HTML}{287D3C}
+\definecolor{codepurple}{HTML}{7D3C98}
+\definecolor{danger}{HTML}{9C1C1C}
+
+\lstset{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{bkblue}\bfseries,
+  commentstyle=\color{codegreen},
+  stringstyle=\color{codepurple},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=7pt,
+  frame=single,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+  columns=fullflexible
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\textbf{CO2018 -- Kịch bản demo trực tiếp}}
+\rhead{\small Nhóm L08}
+\lfoot{\small Simple Operating System Simulator}
+\rfoot{\small Trang \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\term}[1]{\textbf{\color{bkblue}#1}}
+\newcommand{\say}[1]{\textbf{\color{bkblue}Lời trình bày:} ``#1''}
+\newcommand{\proofpoint}[1]{\textbf{\color{bkgold}Điểm chứng minh:} #1}
+\newcommand{\warningbox}[1]{%
+  \begin{center}
+  \fcolorbox{danger}{red!4}{%
+    \begin{minipage}{0.91\textwidth}
+    \textbf{\color{danger}Lưu ý.} #1
+    \end{minipage}}
+  \end{center}}
+\newcommand{\important}[1]{%
+  \begin{center}
+  \fcolorbox{bkblue}{bklight}{%
+    \begin{minipage}{0.91\textwidth}
+    \textbf{Nguyên tắc.} #1
+    \end{minipage}}
+  \end{center}}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+  \thispagestyle{empty}
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[bkblue,line width=2.2pt]
+      ($(current page.north west)+(1.5cm,-1.5cm)$)
+      rectangle
+      ($(current page.south east)+(-1.5cm,1.5cm)$);
+    \draw[gray,line width=0.4pt]
+      ($(current page.north west)+(1.75cm,-1.75cm)$)
+      rectangle
+      ($(current page.south east)+(-1.75cm,1.75cm)$);
+  \end{tikzpicture}
+
+  \centering
+  \vspace*{0.7cm}
+  {\large ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH\par}
+  {\large TRƯỜNG ĐẠI HỌC BÁCH KHOA\par}
+  {\large\bfseries KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH\par}
+
+  \vspace{1.0cm}
+  \IfFileExists{assets/logobk.png}
+    {\includegraphics[width=3.4cm]{assets/logobk.png}}
+    {\rule{3.4cm}{3.4cm}}
+
+  \vspace{1.0cm}
+  {\Huge\bfseries KỊCH BẢN DEMO TRỰC TIẾP\par}
+  \vspace{0.35cm}
+  {\LARGE\bfseries SIMPLE OPERATING SYSTEM SIMULATOR\par}
+  \vspace{0.6cm}
+  {\large Phân công, lời trình bày, bằng chứng tính đúng và chuẩn bị phản biện\par}
+
+  \vfill
+  \begin{tabular}{>{\bfseries}p{4.2cm}p{8.1cm}}
+    Môn học: & Hệ điều hành -- CO2018\\
+    Lớp: & L08\\
+    GVHD: & Thầy Hoàng Lê Hải Thanh\\
+    Thời lượng dự kiến: & 20--30 phút trình bày và demo trực tiếp\\
+    Mục tiêu: & Chứng minh tính đúng đắn, giải thích thiết kế và thể hiện sự
+    hiểu bài của toàn bộ thành viên\\
+  \end{tabular}
+
+  \vfill
+  {\large TP. Hồ Chí Minh, tháng 06/2026\par}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+\pagenumbering{roman}
+\section*{Mục đích của tài liệu}
+\addcontentsline{toc}{section}{Mục đích của tài liệu}
+
+Tài liệu này là kịch bản vận hành cho buổi báo cáo trực tiếp. Nó không phải
+một bài đọc thay thế báo cáo, mà là hướng dẫn nhóm phải \emph{làm gì, nói gì,
+chỉ vào đâu và chứng minh điều gì} trong từng phút. Mọi thành viên phải hiểu
+phần mình phụ trách và phần tổng thể, bởi giảng viên có thể chuyển câu hỏi từ
+người đang nói sang bất kỳ thành viên nào.
+
+\important{Mục tiêu demo không phải tạo ra nhiều output nhất. Mỗi lệnh được
+chạy phải gắn với một mệnh đề cần chứng minh, một invariant, một đoạn code chịu
+trách nhiệm và một giải thích vì sao output là bằng chứng hợp lệ.}
+
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+\section{Thông điệp trung tâm của buổi demo}
+
+\subsection{Ba mệnh đề nhóm cần chứng minh}
+
+Trong 20--30 phút, nhóm cần làm cho giảng viên tin được ba mệnh đề sau:
+
+\begin{enumerate}
+  \item \term{Scheduler đúng}: MLQ chọn process theo priority và weighted slot,
+  giữ FIFO trong từng queue, tôn trọng quantum và không giao cùng PCB cho hai
+  CPU.
+  \item \term{Memory và syscall đúng}: process thao tác memory qua kernel
+  boundary; allocation/free/read/write/copy bảo toàn dữ liệu và kernel từ chối
+  truy cập frame không thuộc caller.
+  \item \term{MM64 đúng}: địa chỉ được tách qua năm cấp, các bảng được cấp
+  sparse, high/low canonical được chấp nhận và non-canonical bị từ chối.
+\end{enumerate}
+
+\subsection{Mô hình chứng minh cần sử dụng}
+
+Mỗi demo phải trình bày theo chuỗi:
+
+\begin{center}
+\(\boxed{\text{Yêu cầu}} \rightarrow
+\boxed{\text{Invariant}} \rightarrow
+\boxed{\text{Code bảo vệ invariant}}\)\\[2mm]
+\(\rightarrow \boxed{\text{Input có chủ đích}} \rightarrow
+\boxed{\text{Output chứng minh}}\)
+\end{center}
+
+Ví dụ với cross-PID protection:
+
+\begin{itemize}
+  \item Yêu cầu: process không được truy cập memory của process khác.
+  \item Invariant: physical frame chỉ được raw I/O nếu thuộc page table caller.
+  \item Code: \code{caller_owns_phyaddr()} trong \code{src/sys_mem.c}.
+  \item Input: PID 1 cấp frame 0, PID 2 cố đọc và ghi physical address 0.
+  \item Output: hai dòng \code{Kernel denied PID 2 ...}.
+\end{itemize}
+
+\warningbox{Không nói ``output giống file mẫu nên code đúng''. Output chỉ là
+bằng chứng khi nhóm giải thích được input đã cô lập property nào và đoạn code
+nào đảm bảo property đó.}
+
+\section{Phân công tổng thể cho năm thành viên}
+
+\subsection{Bảng phân công chính}
+
+\begin{small}
+\begin{longtable}{|p{0.9cm}|p{3.5cm}|p{3.2cm}|p{6.3cm}|}
+\hline
+\textbf{STT} & \textbf{Thành viên} & \textbf{Vai trò demo} &
+\textbf{Trách nhiệm chính}\\ \hline
+1 & Trần Nhật Bảo Anh\newline 2410155 &
+Điều phối và kiến trúc &
+Mở đầu; build/test tổng thể; giải thích luồng end-to-end, PCB, syscall
+boundary; quản lý thời gian; kết luận và nhận câu hỏi tổng hợp.\\ \hline
+2 & Nguyễn Quốc Trung\newline 2413707 &
+Scheduler và synchronization &
+Demo \code{sched_prio},\newline
+\code{sched_out_of_}\code{slot},\newline
+\code{sched_2_cpu}; giải
+thích MLQ, weighted slot, quantum, running list, mutex và timer barrier.\\ \hline
+3 & Trần Hoàng Quốc Bảo\newline 2410297 &
+Virtual memory và tính đúng dữ liệu &
+Demo \code{os_mem_reuse},\newline
+\code{os_mem_}\code{roundtrip_spec}; giải thích VMA,
+region, free list, address translation, user/kernel copy và kiểm tra biên.\\
+\hline
+4 & Trịnh Quốc An\newline 2410046 &
+System call và protection &
+Demo \code{os_syscall_list},\newline
+\code{os_cross_pid_}\code{protection}; giải thích
+dispatcher, syscall 17, PID lookup, ownership, user/kernel separation và
+đường lỗi.\\ \hline
+5 & Nguyễn Trường Giang\newline 2410841 &
+MM64, kiểm thử và phản biện &
+Demo \code{os_mm64_}\code{canonical}; giải thích canonical 57-bit, năm cấp,
+sparse allocation, statistics; trình bày semantic assertions, giới hạn và
+hướng cải tiến.\\ \hline
+\end{longtable}
+\end{small}
+
+\subsection{Trách nhiệm chung bắt buộc}
+
+Mỗi thành viên phải có khả năng trả lời ngắn gọn các câu:
+
+\begin{enumerate}
+  \item Simulator gồm những thread và subsystem nào?
+  \item PCB nằm ở đâu và tại sao phải có running list?
+  \item Priority nhỏ hơn hay lớn hơn được ưu tiên? Quantum khác weighted slot
+  thế nào?
+  \item Vì sao memory operation phải đi qua syscall?
+  \item Virtual address, physical address, page và frame khác nhau thế nào?
+  \item Test pass chứng minh được gì và chưa chứng minh được gì?
+\end{enumerate}
+
+\section{Timeline chuẩn 25 phút}
+
+\subsection{Lịch trình chính}
+
+\begin{small}
+\begin{longtable}{|p{2.0cm}|p{3.1cm}|p{3.0cm}|p{6.5cm}|}
+\hline
+\textbf{Phút} & \textbf{Người phụ trách} & \textbf{Phần} &
+\textbf{Kết quả cần đạt}\\ \hline
+0:00--2:30 & Bảo Anh & Mở đầu và kiến trúc &
+Nêu ba mệnh đề cần chứng minh; vẽ luồng loader--scheduler--CPU--syscall--MM;
+chạy build/test tổng thể hoặc trình bày kết quả đã chuẩn bị.\\ \hline
+2:30--8:00 & Quốc Trung & Scheduler và synchronization &
+Chứng minh priority tại biên quantum, weighted slot/reset và không dispatch
+trùng PCB trên hai CPU.\\ \hline
+8:00--13:00 & Quốc Bảo & Memory correctness &
+Chứng minh free-region reuse, copy theo cú pháp đặc tả và roundtrip giữ byte
+65; giải thích region/page/frame.\\ \hline
+13:00--17:00 & Quốc An & Syscall và protection &
+Chứng minh syscall table đúng, kernel lookup caller bằng PID và từ chối raw
+physical access của PID khác.\\ \hline
+17:00--21:30 & Trường Giang & MM64 và kiểm thử &
+Chứng minh năm cấp, sparse allocation, canonical validation và ý nghĩa
+statistics/semantic assertions.\\ \hline
+21:30--24:00 & Bảo Anh + cả nhóm & Kết luận và giới hạn &
+Tổng hợp traceability, nói thẳng giới hạn, hướng cải tiến và mời phản biện.\\
+\hline
+24:00--30:00 & Thành viên được hỏi & Q\&A &
+Trả lời theo bốn lớp: định nghĩa, code, bằng chứng, trade-off.\\ \hline
+\end{longtable}
+\end{small}
+
+\subsection{Phương án rút gọn 20 phút}
+
+Nếu thời gian trình bày chỉ có 20 phút:
+
+\begin{itemize}
+  \item Không chạy \code{sched_out_of_slot}; dùng bảng quota \(3:2:1\) để giải
+  thích miệng.
+  \item Gộp \code{os_syscall_list} vào phần giới thiệu, chỉ chiếu output đã
+  chuẩn bị.
+  \item Mỗi người nói tối đa ba phút; phần Q\&A dành ít nhất bốn phút.
+  \item Vẫn phải chạy trực tiếp bốn demo cốt lõi:
+  \code{sched_2_cpu}, \code{os_mem_roundtrip_spec},
+  \code{os_cross_pid_protection}, \code{os_mm64_canonical}.
+\end{itemize}
+
+\subsection{Phương án đầy đủ 30 phút}
+
+Nếu có đủ 30 phút, chạy cả sáu demo chính, mở source code tại các hàm trọng
+tâm, và dành 6--8 phút cuối cho câu hỏi phản biện. Không nên thêm testcase
+khác trừ khi giảng viên yêu cầu.
+
+\section{Chuẩn bị môi trường trước buổi demo}
+
+\subsection{Bố trí cửa sổ}
+
+Nên chuẩn bị ba cửa sổ:
+
+\begin{enumerate}
+  \item Terminal chính, font lớn, dùng để chạy lệnh.
+  \item IDE mở sẵn \code{src/sched.c}, \code{src/sys_mem.c},
+  \code{src/libmem.c} và \code{src/mm64.c}. Mở thêm \code{src/timer.c} hoặc
+  \code{src/loader.c} khi được hỏi sâu.
+  \item PDF báo cáo hoặc study guide tại các sơ đồ và bảng bằng chứng.
+\end{enumerate}
+
+Tắt notification, đóng tab cá nhân, tăng kích thước terminal và đảm bảo đường
+dẫn repository không bị đổi.
+
+\subsection{Lệnh kiểm tra trước khi vào phòng}
+
+\begin{lstlisting}[language=bash]
+pwd
+git status --short
+make clean
+make all
+make test
+\end{lstlisting}
+
+Kết quả bắt buộc trước khi demo:
+
+\begin{lstlisting}[language={}]
+All semantic output assertions passed.
+\end{lstlisting}
+
+Sau đó chạy thử từng lệnh demo:
+
+\begin{lstlisting}[language=bash]
+./os sched_prio
+./os sched_out_of_slot
+./os sched_2_cpu
+./os os_mem_reuse
+./os os_mem_roundtrip_spec
+./os os_syscall_list
+./os os_cross_pid_protection
+./os os_mm64_canonical
+\end{lstlisting}
+
+\subsection{Lệnh demo gọn, dễ quan sát}
+
+Để output không tràn màn hình, có thể lọc đúng bằng chứng:
+
+\begin{lstlisting}[language=bash]
+./os sched_prio | grep -E "Loaded|Dispatched|Put process|finished"
+
+./os sched_2_cpu | grep -E "CPU [01]: (Dispatched|Put|Processed)"
+
+./os os_mem_reuse | grep -E "MEM alloc|MEM free|MEM read"
+
+./os os_mem_roundtrip_spec | grep -E "MEM alloc|MEM read"
+
+./os os_cross_pid_protection | grep -E "MEM alloc|Kernel denied"
+
+./os os_mm64_canonical | grep -E "MM64 mapped|MM64 pid|MM64 rejected"
+\end{lstlisting}
+
+\warningbox{Luôn giải thích rằng \code{grep} chỉ lọc output để dễ nhìn, không
+thay đổi chương trình hoặc tiêu chí đúng. Khi giảng viên yêu cầu, chạy lại
+không lọc.}
+
+\section{Kịch bản của Trần Nhật Bảo Anh}
+
+\subsection{Mục tiêu phần trình bày}
+
+Trong 2--3 phút đầu, Bảo Anh phải tạo được ``bản đồ'' để mọi demo sau có chỗ
+gắn vào. Không đi sâu code ngay; tập trung vào vấn đề, kiến trúc và cách nhóm
+chứng minh.
+
+\subsection{Lời mở đầu đề xuất}
+
+\say{Nhóm em xây dựng một Simple Operating System Simulator gồm ba trục chính:
+scheduler và synchronization để chia sẻ CPU, virtual memory để quản lý và cô
+lập RAM, cùng system-call interface để user process không thao tác trực tiếp
+tài nguyên kernel. Trong phần demo, nhóm em không chỉ chạy output mà sẽ chứng
+minh từng invariant bằng input có chủ đích, đoạn code bảo vệ invariant và
+semantic assertion tương ứng.}
+
+\say{Ba mệnh đề nhóm em sẽ chứng minh là: scheduler chọn đúng và không giao
+trùng PCB; memory operation bảo toàn dữ liệu và bảo vệ ownership; cuối cùng
+MM64 page-table walk chấp nhận đúng canonical address và cấp bảng sparse.}
+
+\subsection{Kiến trúc phải giải thích}
+
+Bảo Anh cần trình bày luồng:
+
+\begin{center}
+\textbf{Configuration} \(\rightarrow\) Loader tạo PCB
+\(\rightarrow\) MLQ ready queues\\[2mm]
+\(\rightarrow\) CPU chạy instruction
+\(\rightarrow\) System call
+\(\rightarrow\) Virtual/physical memory
+\end{center}
+
+Timer thread tạo barrier theo time slot giữa loader và các CPU. Khi process
+hết quantum, PCB quay về ready queue; khi hoàn tất, memory context và PCB được
+giải phóng.
+
+\subsection{Demo build và test tổng thể}
+
+\begin{lstlisting}[language=bash]
+make clean && make all && make test
+\end{lstlisting}
+
+\say{Lệnh này chứng minh repository có thể build từ trạng thái sạch và toàn bộ
+23 configuration chạy đến cuối. Tuy nhiên, exit code bằng 0 chưa đủ chứng minh
+tính đúng. Cuối suite, \code{tests/assert_outputs.sh} kiểm tra các semantic
+property như cross-PID denial, region reuse, canonical validation và byte
+roundtrip. Các thành viên tiếp theo sẽ giải thích từng property.}
+
+\proofpoint{Build sạch chứng minh tính tái lập; semantic assertions chứng minh
+một tập invariant đã xác định. Nó không chứng minh chương trình không còn mọi
+bug, và nhóm phải nói rõ giới hạn này.}
+
+\subsection{Kiến thức Bảo Anh bắt buộc nắm}
+
+\begin{itemize}
+  \item Vai trò \code{main()}, loader thread, CPU thread, timer và kernel
+  structure.
+  \item Vòng đời PCB: NEW, READY, RUNNING, FINISHED.
+  \item Luồng một ALLOC từ CPU instruction đến syscall 17 và memory allocator.
+  \item Khác biệt giữa simulation và OS thật.
+  \item Traceability từ yêu cầu đến testcase và assertion.
+  \item Giới hạn chính: queue mảng \(O(n)\), PID lookup tuyến tính, global
+  memory lock, FIFO replacement, không có TLB/hardware interrupt thật.
+\end{itemize}
+
+\subsection{Câu chuyển giao}
+
+\say{Sau khi đã xác định luồng tổng thể, bạn Quốc Trung sẽ chứng minh scheduler
+giữ đúng priority, weighted quota và ownership PCB khi chạy đa CPU.}
+
+\section{Kịch bản của Nguyễn Quốc Trung}
+
+\subsection{Mệnh đề cần chứng minh}
+
+\begin{enumerate}
+  \item Priority nhỏ hơn được ưu tiên tại scheduling boundary.
+  \item Process mới không preempt giữa quantum hiện tại.
+  \item Weighted slot cho queue quota khác nhau và reset khi cần.
+  \item Hai CPU không nhận cùng PCB.
+\end{enumerate}
+
+\subsection{Demo 1: priority và quantum}
+
+Mở \code{input/sched_prio}:
+
+\begin{lstlisting}[language={}]
+2 1 2
+0 s1 1
+1 s0 0
+\end{lstlisting}
+
+\say{Quantum là 2, có một CPU. PID 1 priority 1 đến lúc 0; PID 2 priority 0
+đến lúc 1. PID 2 có priority cao hơn nhưng không cướp CPU giữa quantum. Sau
+khi PID 1 hết quantum và được put lại queue, scheduler mới chọn PID 2.}
+
+Chạy:
+
+\begin{lstlisting}[language=bash]
+./os sched_prio | grep -E "Loaded|Dispatched|Put process|finished"
+\end{lstlisting}
+
+Chỉ vào thứ tự:
+
+\begin{lstlisting}[language={}]
+CPU 0: Dispatched process 1
+Loaded ... PID: 2 PRIO: 0
+CPU 0: Put process 1 to run queue
+CPU 0: Dispatched process 2
+\end{lstlisting}
+
+\proofpoint{Input cố ý cho process priority cao đến trong lúc PID 1 đang chạy.
+Output chứng minh policy là preemption tại biên quantum, không phải preemption
+tức thời.}
+
+\subsection{Demo 2: weighted slot và reset}
+
+Mở \code{input/sched_out_of_slot}. Giải thích:
+
+\[
+slot[137]=3,\qquad slot[138]=2,\qquad slot[139]=1
+\]
+
+Chạy:
+
+\begin{lstlisting}[language=bash]
+./os sched_out_of_slot | grep -E "Dispatched|Put process|finished"
+\end{lstlisting}
+
+\say{Sau lần chạy đầu của priority 139, queue này hết quota. Priority 137 được
+chọn ba quantum, priority 138 hai quantum. Khi các queue có PCB đều hết quota,
+scheduler reset chu kỳ. Process priority thấp không bị mất; nó tiếp tục sau
+khi các process cao hơn hoàn tất hoặc quota cho phép.}
+
+\subsection{Demo 3: hai CPU}
+
+Chạy:
+
+\begin{lstlisting}[language=bash]
+./os sched_2_cpu | grep -E "CPU [01]: (Dispatched|Put|Processed)"
+\end{lstlisting}
+
+\say{Điều cần chứng minh không phải CPU 0 bắt buộc nhận PID cụ thể nào, vì thứ
+tự pthread có thể thay đổi. Invariant là tại cùng thời điểm, CPU 0 và CPU 1
+không dispatch cùng PID. \code{get_proc()} dequeue PCB và thêm vào
+\code{running_list} trong cùng \code{queue_lock}, nên CPU thứ hai không còn
+nhìn thấy PCB đó trong ready queue.}
+
+\subsection{Source code cần mở}
+
+Trong \code{src/sched.c}, chỉ vào:
+
+\begin{itemize}
+  \item \code{mlq_ready_queue[MAX_PRIO]} và \code{slot[MAX_PRIO]}.
+  \item \code{get_mlq_proc()}: quét priority, giảm quota, reset khi không chọn
+  được.
+  \item \code{put_mlq_proc()}: purge running list rồi enqueue lại.
+  \item \code{queue_lock}: bao trọn thao tác chuyển ownership.
+\end{itemize}
+
+Trong \code{src/timer.c}, chỉ vào \code{next_slot()} và giải thích condition
+variables tạo barrier.
+
+\subsection{Kiến thức Quốc Trung bắt buộc nắm}
+
+\begin{itemize}
+  \item Priority, quantum, weighted slot và FIFO khác nhau thế nào.
+  \item Tại sao queue-level FIFO nằm ở \code{dequeue()}, còn priority selection
+  nằm ở scheduler.
+  \item Running list giải quyết vấn đề gì.
+  \item Race condition nếu bỏ \code{queue_lock}.
+  \item Mutex khác condition variable thế nào.
+  \item Starvation có được loại bỏ hoàn toàn hay không.
+  \item Độ phức tạp quét MLQ, enqueue, dequeue và PID lookup.
+\end{itemize}
+
+\subsection{Câu hỏi dự kiến}
+
+\textbf{Hỏi:} Vì sao process priority thấp vẫn phải chờ rất lâu?\\
+\textbf{Đáp:} Weighted slot giảm starvation nhưng quota của priority cao lớn.
+Nếu queue cao liên tục có việc, thời gian chờ queue thấp vẫn dài. Đây là
+trade-off giữa response time theo priority và fairness.
+
+\textbf{Hỏi:} Nếu bỏ running list thì sao?\\
+\textbf{Đáp:} Kernel không có registry cho process đang chạy để lookup PID;
+ownership giữa ready/running cũng khó kiểm chứng và có nguy cơ dispatch trùng.
+
+\subsection{Câu chuyển giao}
+
+\say{Scheduler đã đảm bảo mỗi thời điểm process được điều phối đúng. Tiếp theo,
+bạn Quốc Bảo sẽ chứng minh address space của process quản lý region đúng và
+dữ liệu được bảo toàn qua ranh giới user/kernel.}
+
+\section{Kịch bản của Trần Hoàng Quốc Bảo}
+
+\subsection{Mệnh đề cần chứng minh}
+
+\begin{enumerate}
+  \item Allocation tạo region hợp lệ và free region được tái sử dụng.
+  \item Access kiểm tra đúng biên half-open \([start,end)\).
+  \item Copy user--kernel--user theo cú pháp đặc tả bảo toàn byte dữ liệu.
+  \item Region logic, page và frame vật lý là các lớp khác nhau.
+\end{enumerate}
+
+\subsection{Demo 1: region reuse}
+
+Mở \code{input/proc/memreuse}:
+
+\begin{lstlisting}[language={}]
+20 4
+alloc 100 1
+free 1
+alloc 50 2
+read 2 49 3
+\end{lstlisting}
+
+Chạy:
+
+\begin{lstlisting}[language=bash]
+./os os_mem_reuse | grep -E "MEM alloc|MEM free|MEM read"
+\end{lstlisting}
+
+Output trọng tâm:
+
+\begin{lstlisting}[language={}]
+MEM alloc PID 1 region 1 [0,100) size 100
+MEM free PID 1 region 1 [0,100)
+MEM alloc PID 1 region 2 [0,50) size 50
+MEM read PID 1 region 2 offset 49 value 0
+\end{lstlisting}
+
+\say{Region 1 được free thành khoảng trống \([0,100)\). Allocation 50 byte sau
+đó nhận lại \([0,50)\), chứng minh allocator tìm free region trước khi tăng
+\code{sbrk}. Offset 49 là byte cuối hợp lệ của region 50 byte; offset 50 phải
+bị từ chối theo interval half-open.}
+
+\proofpoint{Đây là bằng chứng tái sử dụng logical region. Không nên nói rằng
+frame vật lý chắc chắn đã unmap rồi cấp lại, vì implementation có thể giữ page
+mapping trong address space process.}
+
+\subsection{Demo 2: copy theo đúng cú pháp đặc tả}
+
+Mở \code{input/proc/memroundtrip_spec}:
+
+\begin{lstlisting}[language={}]
+20 7
+alloc 16 1
+write 65 1 0
+copy_from_user 1 2
+alloc 16 3
+copy_to_user 2 3 0
+read 3 0 4
+calc
+\end{lstlisting}
+
+Chạy:
+
+\begin{lstlisting}[language=bash]
+./os os_mem_roundtrip_spec | grep -E "MEM alloc|MEM read"
+\end{lstlisting}
+
+\say{Lệnh \code{copy_from_user 1 2} và \code{copy_to_user 2 3 0} dùng đúng số
+tham số trong đặc tả. Parser mặc định copy một byte. Byte 65 được ghi ở user
+region 1, copy sang kernel region 2, copy về user region 3 và đọc lại vẫn là
+65. Đây là bằng chứng end-to-end cho parser, syscall, helper user/kernel và
+address translation.}
+
+\subsection{Source code cần mở}
+
+Trong \code{src/loader.c}, chỉ vào parser tương thích:
+
+\begin{itemize}
+  \item \code{copy_from_user} hai tham số mặc định offset 0, size 1.
+  \item \code{copy_to_user} ba tham số mặc định size 1.
+  \item Dạng bốn tham số vẫn được giữ để copy nhiều byte.
+\end{itemize}
+
+Trong \code{src/libmem.c}, chỉ vào:
+
+\begin{itemize}
+  \item \code{__alloc()}: tìm free region hoặc tăng VMA.
+  \item \code{__free()}: đưa region vào free list.
+  \item \code{__kmem_copy_from_user()} và \code{__kmem_copy_to_user()}:
+  copy từng byte qua helper có kiểm tra.
+\end{itemize}
+
+\subsection{Kiến thức Quốc Bảo bắt buộc nắm}
+
+\begin{itemize}
+  \item Virtual address, page number, offset, frame number và physical address.
+  \item VMA, \code{sbrk}, symbol region table và free-region list.
+  \item Half-open interval và kiểm tra biên.
+  \item Internal/external fragmentation.
+  \item Paging so với continuous allocation.
+  \item User memory, kernel memory, \code{kmalloc} và cache pool.
+  \item Tại sao copy helper an toàn hơn dereference user pointer trực tiếp.
+\end{itemize}
+
+\subsection{Câu hỏi dự kiến}
+
+\textbf{Hỏi:} ALLOC 100 byte có dùng đúng 100 byte RAM không?\\
+\textbf{Đáp:} Region logic dài 100 byte, nhưng mapping vật lý align theo page
+size nên có thể dùng một page lớn hơn. Phần dư có thể được đưa vào free list.
+
+\textbf{Hỏi:} FREE có luôn trả frame vật lý ngay không?\\
+\textbf{Đáp:} Không trong user-region path hiện tại. Nó trả logical region cho
+free list để tái sử dụng; page mapping có thể còn tồn tại đến khi process kết
+thúc.
+
+\subsection{Câu chuyển giao}
+
+\say{Phần vừa rồi chứng minh dữ liệu và region được quản lý đúng trong address
+space của process. Bạn Quốc An sẽ tiếp tục chứng minh process không thể vượt
+qua kernel boundary để truy cập frame của process khác.}
+
+\section{Kịch bản của Trịnh Quốc An}
+
+\subsection{Mệnh đề cần chứng minh}
+
+\begin{enumerate}
+  \item Syscall table ánh xạ đúng số syscall đến handler.
+  \item Kernel xác định caller bằng PID từ registry do kernel quản lý.
+  \item Raw physical I/O bị từ chối nếu frame không thuộc caller.
+  \item Unified syscall tập trung policy nhưng có trade-off.
+\end{enumerate}
+
+\subsection{Demo 1: syscall table}
+
+Chạy:
+
+\begin{lstlisting}[language=bash]
+./os os_syscall_list | grep -E "0-sys|17-sys|440-sys"
+\end{lstlisting}
+
+Output:
+
+\begin{lstlisting}[language={}]
+0-sys_listsyscall
+17-sys_memmap
+440-sys_xxxhandler
+\end{lstlisting}
+
+\say{\code{src/syscall.tbl} là nguồn dữ liệu duy nhất. Script sinh
+\code{syscalltbl.lst}; \code{src/syscall.c} include danh sách này bằng
+X-macro để tạo prototype, bảng tên và dispatcher switch. Điều này tránh ba
+nơi khai báo bị lệch nhau.}
+
+\subsection{Demo 2: cross-PID protection}
+
+Mở input owner/intruder và chạy:
+
+\begin{lstlisting}[language=bash]
+./os os_cross_pid_protection | grep -E "MEM alloc|Kernel denied"
+\end{lstlisting}
+
+Output:
+
+\begin{lstlisting}[language={}]
+MEM alloc PID 1 region 1 [0,100) size 100
+Kernel denied PID 2 physical read at 0x0
+Kernel denied PID 2 physical write at 0x0
+\end{lstlisting}
+
+\say{PID 1 sở hữu frame vật lý chứa region đầu tiên. PID 2 biết địa chỉ 0 và
+gọi trực tiếp physical read/write, nhưng biết địa chỉ không tạo ra quyền.
+Handler syscall lookup PCB thật của PID 2 rồi kiểm tra frame có xuất hiện trong
+page table PID 2 hay không. Vì không thuộc caller, cả hai thao tác bị từ chối.}
+
+\subsection{Source code cần mở}
+
+Trong \code{src/syscall.c}:
+
+\begin{itemize}
+  \item \code{_syscall()} dispatch theo số syscall.
+  \item Unknown syscall đi vào \code{__sys_ni_syscall()}.
+\end{itemize}
+
+Trong \code{src/sys_mem.c}:
+
+\begin{itemize}
+  \item \code{find_proc_by_pid(pid)} xác định caller.
+  \item \code{caller_owns_phyaddr()} kiểm tra ownership.
+  \item Các operation selector của syscall 17.
+\end{itemize}
+
+Trong \code{src/sched.c}, chỉ vào \code{find_proc_by_pid()} duyệt running list
+và ready queues dưới \code{queue_lock}.
+
+\subsection{Kiến thức Quốc An bắt buộc nắm}
+
+\begin{itemize}
+  \item User mode/kernel mode và lý do cần syscall.
+  \item Dispatcher, syscall number, register arguments và handler.
+  \item Vì sao không truyền trực tiếp \code{pcb_t *} từ user.
+  \item Address translation khác access control thế nào.
+  \item Frame ownership và cross-PID isolation.
+  \item Ưu/nhược điểm unified syscall.
+  \item Hậu quả nếu syscall dài hoặc thiếu validation.
+\end{itemize}
+
+\subsection{Câu hỏi dự kiến}
+
+\textbf{Hỏi:} Vì sao PID cũng có thể bị giả mạo?\\
+\textbf{Đáp:} Trong OS thật, kernel lấy identity từ execution context/trap,
+không tin PID do user tự khai. Simulator truyền PID từ PCB đang chạy qua
+library; handler vẫn lookup PCB trong registry kernel thay vì nhận con trỏ PCB
+tùy ý. Đây là mô phỏng đơn giản hóa nguyên tắc đó.
+
+\textbf{Hỏi:} Dịch được physical address có nghĩa được phép truy cập không?\\
+\textbf{Đáp:} Không. Translation trả lời dữ liệu nằm đâu; access control trả
+lời caller có quyền hay không. Test cross-PID cô lập chính hai khái niệm này.
+
+\subsection{Câu chuyển giao}
+
+\say{Kernel boundary đã bảo vệ ownership. Phần cuối, bạn Trường Giang sẽ chứng
+minh page-table hierarchy 64-bit xử lý đúng canonical address và cấp bảng
+sparse, đồng thời giải thích cách nhóm kiểm thử các invariant.}
+
+\section{Kịch bản của Nguyễn Trường Giang}
+
+\subsection{Mệnh đề cần chứng minh}
+
+\begin{enumerate}
+  \item Địa chỉ 57-bit được tách thành năm index 9 bit và offset 12 bit.
+  \item Low và high canonical address được chấp nhận.
+  \item Non-canonical address bị từ chối trước page-table walk.
+  \item Page-table branch được cấp sparse và statistics phản ánh đúng chi phí.
+\end{enumerate}
+
+\subsection{Demo MM64 canonical}
+
+Chạy:
+
+\begin{lstlisting}[language=bash]
+./os os_mm64_canonical | grep -E "MM64 mapped|MM64 pid|MM64 rejected"
+\end{lstlisting}
+
+Giải thích từng mốc:
+
+\begin{longtable}{|p{4.2cm}|p{4cm}|p{6cm}|}
+\hline
+\textbf{Địa chỉ} & \textbf{Indexes} & \textbf{Ý nghĩa}\\ \hline
+\code{0x0} & \([0,0,0,0,0]\) & Low canonical; walk đầu cấp bốn bảng con,
+tổng bytes thành 20480.\\ \hline
+\code{0x200000} & \([0,0,0,1,0]\) & Khác PMD index, cần thêm một PT table;
+bytes tăng lên 24576.\\ \hline
+\code{0xff00000000000000} & \([256,0,0,0,0]\) & High canonical, tạo PGD
+branch mới; bytes tăng lên 40960.\\ \hline
+\code{0x100000000000000} & Không có index/walk mới & Bit 56 bằng 1 nhưng các
+bit trên không sign-extend; bị từ chối trước walk.\\ \hline
+\end{longtable}
+
+\say{Mỗi bảng có 512 entry, mỗi entry 8 byte nên đúng 4096 byte. Root PGD đã
+có từ lúc init; mapping đầu cần thêm P4D, PUD, PMD và PT, do đó
+\(5\times4096=20480\). Các địa chỉ chia sẻ prefix dùng lại bảng cũ, thể hiện
+sparse allocation.}
+
+\subsection{Demo semantic assertions}
+
+Mở \code{tests/assert_outputs.sh} và trình bày:
+
+\say{Nhóm phân biệt ba tầng: build, execution và semantic assertion. Chạy
+không crash chỉ chứng minh execution. Script này kiểm tra các mốc có ý nghĩa
+như frame của PID khác bị từ chối, region được reuse, high canonical được
+chấp nhận, non-canonical bị từ chối và byte roundtrip bằng 65.}
+
+\subsection{Source code cần mở}
+
+Trong \code{src/mm64.c}, chỉ vào:
+
+\begin{itemize}
+  \item \code{paging64_is_canonical()}.
+  \item \code{walk_pte()} và tham số \code{create}.
+  \item \code{alloc_table()} tăng \code{pgtable_bytes}.
+  \item \code{get_pd_from_address()} tách index.
+\end{itemize}
+
+Trong \code{include/mm64.h}, chỉ vào bit range PGD/P4D/PUD/PMD/PT.
+
+\subsection{Kiến thức Trường Giang bắt buộc nắm}
+
+\begin{itemize}
+  \item Vì sao 512 entry tương ứng 9 bit.
+  \item Vì sao page-table page là 4096 byte.
+  \item Canonical sign extension của bit 56.
+  \item Sparse allocation và lợi ích so với page table phẳng.
+  \item Page-table walk cost và vai trò TLB trong OS thật.
+  \item Ý nghĩa \code{walks}, \code{accesses}, \code{bytes}.
+  \item Test hữu hạn chứng minh gì và không chứng minh gì.
+  \item Giới hạn test hiện tại và đề xuất cải tiến.
+\end{itemize}
+
+\subsection{Câu hỏi dự kiến}
+
+\textbf{Hỏi:} Page table phẳng 57-bit tốn bao nhiêu?\\
+\textbf{Đáp:} Page 4 KiB dùng 12-bit offset, còn 45-bit page number, tức
+\(2^{45}\) PTE. Với 8 byte/PTE, bảng phẳng cần \(2^{48}\) byte, tương đương
+256 TiB cho một address space, nên hierarchical sparse paging là cần thiết.
+
+\textbf{Hỏi:} Tại sao test pass chưa đủ?\\
+\textbf{Đáp:} Test chỉ chứng minh property được assert trên input đã chạy. Các
+đường stress, race hiếm, swap-full và invalid argument vẫn cần thêm kiểm thử
+hoặc công cụ như sanitizer/race detector.
+
+\subsection{Câu chuyển giao}
+
+\say{Các demo vừa rồi nối từ policy đến code và output: scheduler giữ
+ownership CPU, syscall giữ ranh giới đặc quyền, memory giữ dữ liệu và MM64 giữ
+đúng translation. Bạn Bảo Anh sẽ tổng hợp các giới hạn và kết luận.}
+
+\section{Kết luận do Bảo Anh trình bày}
+
+\subsection{Lời kết đề xuất}
+
+\say{Qua sáu kịch bản có chủ đích, nhóm em đã chứng minh ba nhóm invariant:
+scheduler tôn trọng priority/quantum và không dispatch trùng PCB; memory
+operation bảo toàn region, dữ liệu và frame ownership qua syscall boundary;
+MM64 chấp nhận đúng canonical address, từ chối địa chỉ sai và cấp page table
+sparse. Nhóm cũng dùng semantic assertions để biến các bằng chứng này thành
+kiểm thử có thể lặp lại.}
+
+\say{Nhóm em không xem test pass là bằng chứng tuyệt đối. Các giới hạn còn lại
+gồm global lock làm giảm concurrency, FIFO replacement đơn giản, PID lookup
+tuyến tính, chưa mô phỏng TLB và chưa stress mọi đường swap/out-of-memory.
+Nếu mở rộng, nhóm sẽ thêm lock theo address space, PID registry hiệu quả hơn,
+stress/race tests và replacement policy gần OS thật hơn.}
+
+\section{Ma trận chứng minh tính đúng}
+
+\begin{footnotesize}
+\begin{longtable}{|p{2.9cm}|p{3.2cm}|p{4.2cm}|p{4.4cm}|}
+\hline
+\textbf{Property} & \textbf{Input/demo} & \textbf{Code chịu trách nhiệm} &
+\textbf{Bằng chứng quan sát}\\ \hline
+Priority tại quantum boundary & \code{sched_prio} &
+\code{get_mlq_proc()}, \code{cpu_routine()} &
+PID 2 priority 0 chỉ dispatch sau khi PID 1 được put.\\ \hline
+Weighted quota/reset & \code{sched_out_of_}\newline\code{slot} &
+\code{slot[]}, reset loop trong \code{get_mlq_proc()} &
+Priority 137 chạy ba quota, 138 hai quota, process 139 không mất.\\ \hline
+Không dispatch trùng PCB & \code{sched_2_cpu} &
+\code{queue_lock}, \code{running_list} &
+Hai CPU luôn nhận PID khác nhau.\\ \hline
+Free-region reuse & \code{os_mem_reuse} &
+\code{__free()}, \code{get_free_vmrg_area()} &
+Region 2 nhận lại \([0,50)\) từ vùng \([0,100)\) vừa free.\\ \hline
+Spec-compatible copy & \code{os_mem_}\newline\code{roundtrip_spec} &
+Parser loader, copy helpers, syscall 17 &
+Cú pháp đặc tả chạy được; byte đọc lại bằng 65.\\ \hline
+Cross-PID isolation & \code{os_cross_pid_}\newline\code{protection} &
+\code{find_proc_by_pid()}, \code{caller_owns_phyaddr()} &
+PID 2 bị từ chối read/write frame 0 thuộc PID 1.\\ \hline
+Syscall mapping & \code{os_syscall_list} &
+\code{syscall.tbl}, generated list, dispatcher &
+Hiện đúng syscall 0, 17 và 440.\\ \hline
+Canonical MM64 & \code{os_mm64_}\newline\code{canonical} &
+\code{paging64_is_}\newline\code{canonical()}, \code{walk_pte()} &
+Low/high accepted; non-canonical rejected; bytes tăng theo branch.\\ \hline
+\end{longtable}
+\end{footnotesize}
+
+\section{Kịch bản xử lý sự cố trực tiếp}
+
+\subsection{Nếu output scheduler khác thứ tự đã tập}
+
+Không hoảng hoặc khẳng định chương trình sai. Nói:
+
+\say{Một số dòng độc lập có thể đổi thứ tự do pthread scheduling. Nhóm em sẽ
+kiểm tra invariant thay vì so toàn bộ trace: tại cùng thời điểm không có hai
+CPU giữ cùng PID, và priority được tôn trọng tại scheduling boundary.}
+
+Sau đó chạy lại với \code{grep} hoặc dùng output đã lưu để giải thích.
+
+\subsection{Nếu một lệnh demo quá dài}
+
+Dừng bằng \code{Ctrl-C} chỉ khi thực sự cần, sau đó dùng output đã sinh bởi
+\code{make test}:
+
+\begin{lstlisting}[language=bash]
+grep -E "PATTERN" output/test_name.output
+\end{lstlisting}
+
+Giải thích rõ đây là output từ suite vừa chạy, không phải output dựng sẵn.
+
+\subsection{Nếu build lỗi do artifact}
+
+\begin{lstlisting}[language=bash]
+make clean
+make all
+\end{lstlisting}
+
+Không sửa code trực tiếp trong buổi demo trừ khi giảng viên yêu cầu. Một thay
+đổi vội có thể phá toàn bộ môi trường.
+
+\subsection{Nếu giảng viên hỏi ngoài phần của thành viên}
+
+Người được hỏi trả lời phần mình biết trước. Nếu cần chuyển:
+
+\say{Phần invariant tổng thể em hiểu là ...; chi tiết implementation nằm trong
+module do bạn ... phụ trách, em xin phép để bạn ấy bổ sung chính xác đoạn code.}
+
+Không im lặng hoàn toàn và không đẩy ngay câu hỏi cho người khác.
+
+\section{Bộ câu hỏi phản biện theo thành viên}
+
+\subsection{Câu hỏi dành cho Bảo Anh}
+
+\begin{enumerate}
+  \item Tại sao simulator cần cả loader, timer và CPU thread?
+  \item Luồng một instruction ALLOC đi qua những hàm nào?
+  \item Bằng chứng nào chứng minh implementation bám đặc tả?
+  \item Những phần nào là mở rộng so với source gốc?
+  \item Vì sao test pass không phải bằng chứng tuyệt đối?
+\end{enumerate}
+
+\subsection{Câu hỏi dành cho Quốc Trung}
+
+\begin{enumerate}
+  \item Quantum khác weighted slot thế nào?
+  \item Vì sao priority cao không preempt tức thời?
+  \item Nếu bỏ queue lock, lỗi nào có thể xảy ra?
+  \item Running list có vai trò gì ngoài logging?
+  \item Scheduler có đảm bảo fairness tuyệt đối không?
+\end{enumerate}
+
+\subsection{Câu hỏi dành cho Quốc Bảo}
+
+\begin{enumerate}
+  \item VMA, region, page và frame khác nhau thế nào?
+  \item Tại sao offset bằng size không hợp lệ?
+  \item FREE có trả physical frame ngay không?
+  \item Copy user/kernel kiểm tra biên ở đâu?
+  \item Continuous allocation có ưu/nhược điểm gì so với paging?
+\end{enumerate}
+
+\subsection{Câu hỏi dành cho Quốc An}
+
+\begin{enumerate}
+  \item Vì sao user không được truyền PCB pointer qua syscall?
+  \item PID lookup tìm process đang chạy ở đâu?
+  \item Translation khác authorization thế nào?
+  \item Unified syscall có nhược điểm gì?
+  \item Điều gì xảy ra nếu unknown syscall number được gọi?
+\end{enumerate}
+
+\subsection{Câu hỏi dành cho Trường Giang}
+
+\begin{enumerate}
+  \item Vì sao canonical address cần sign extension?
+  \item Vì sao mỗi cấp dùng 9 bit?
+  \item Vì sao first mapping dùng 20480 byte?
+  \item Sparse allocation tiết kiệm khi nào?
+  \item Statistics hiện tại chưa đo được điều gì?
+\end{enumerate}
+
+\section{Checklist luyện tập từng thành viên}
+
+\subsection{Tiêu chí đạt trước buổi demo}
+
+Mỗi thành viên chỉ được xem là sẵn sàng khi:
+
+\begin{itemize}
+  \item Có thể trình bày phần mình trong thời gian quy định mà không đọc nguyên
+  văn.
+  \item Có thể chạy đúng lệnh demo và chỉ ra ba dòng output quan trọng.
+  \item Có thể mở đúng file/hàm trong vòng 15 giây.
+  \item Có thể giải thích một invariant và một trade-off.
+  \item Trả lời được toàn bộ câu hỏi chung và ít nhất bốn câu hỏi chuyên môn.
+  \item Biết xử lý khi output concurrent đổi thứ tự.
+\end{itemize}
+
+\subsection{Kế hoạch tập dượt}
+
+\begin{longtable}{|p{2.2cm}|p{4.1cm}|p{7.8cm}|}
+\hline
+\textbf{Lần} & \textbf{Mục tiêu} & \textbf{Cách thực hiện}\\ \hline
+1 & Hiểu nội dung & Mỗi người trình bày không giới hạn thời gian; thành viên
+khác hỏi ``vì sao'' sau từng kết luận.\\ \hline
+2 & Đúng kỹ thuật & Chạy toàn bộ lệnh demo từ môi trường sạch; ghi lại lỗi thao
+tác và điểm chuyển cửa sổ chậm.\\ \hline
+3 & Đúng thời gian & Bấm giờ 25 phút; cắt mọi câu không phục vụ ba mệnh đề
+trung tâm.\\ \hline
+4 & Phản biện chéo & Mỗi người hỏi phần của người khác; người bị hỏi phải trả
+lời trước khi chủ phần bổ sung.\\ \hline
+5 & Tổng duyệt & Mô phỏng phòng báo cáo, dùng máy sẽ mang đi, không dừng giữa
+chừng trừ lỗi thực sự.\\ \hline
+\end{longtable}
+
+\section{Phiếu tự đánh giá sau mỗi lần tập}
+
+\begin{longtable}{|p{6.3cm}|c|c|c|p{3cm}|}
+\hline
+\textbf{Tiêu chí} & \textbf{Tốt} & \textbf{Đạt} & \textbf{Chưa đạt} &
+\textbf{Ghi chú}\\ \hline
+Nói rõ yêu cầu/invariant trước khi chạy lệnh & & & &\\ \hline
+Giải thích được input được thiết kế để cô lập property nào & & & &\\ \hline
+Chỉ đúng code chịu trách nhiệm & & & &\\ \hline
+Chỉ đúng output chứng minh & & & &\\ \hline
+Không nhầm priority, quantum và weighted slot & & & &\\ \hline
+Không nhầm region, page và frame & & & &\\ \hline
+Không khẳng định quá mức những gì test chứng minh & & & &\\ \hline
+Trả lời được trade-off và giới hạn & & & &\\ \hline
+Chuyển giao giữa thành viên tự nhiên & & & &\\ \hline
+Hoàn thành trong thời gian & & & &\\ \hline
+\end{longtable}
+
+\section{Cheat sheet dùng ngay trước khi vào phòng}
+
+\begin{longtable}{|p{4.2cm}|p{10cm}|}
+\hline
+\textbf{Chủ đề} & \textbf{Một câu phải nhớ}\\ \hline
+Thông điệp & Mỗi output phải nối với invariant và code, không chỉ nói ``test
+pass''.\\ \hline
+Scheduler & Priority nhỏ hơn cao hơn; weighted slot là \(140-prio\); quantum
+giới hạn thời gian giữ CPU.\\ \hline
+Đa CPU & \code{queue_lock} bảo vệ chuyển PCB từ ready queue sang running
+list.\\ \hline
+Synchronization & Mutex bảo vệ critical section; condition variable giúp
+thread ngủ chờ condition/time slot.\\ \hline
+Memory & Region là allocation logic; page map sang frame; interval là
+\([start,end)\).\\ \hline
+Syscall & Kernel lookup caller bằng PID và kiểm tra ownership trước raw
+physical I/O.\\ \hline
+Copy spec & \code{copy_from_user src dst} và
+\code{copy_to_user src dst offset} mặc định copy một byte.\\ \hline
+MM64 & 57 bit bằng năm index 9 bit cộng offset 12 bit; bit 56 phải được
+sign-extend.\\ \hline
+Statistics & Một bảng là 4096 byte; first branch gồm root và bốn bảng con =
+20480 byte.\\ \hline
+Giới hạn & Test hữu hạn không chứng minh không còn bug; nói rõ stress/race và
+swap-full chưa phủ hết.\\ \hline
+\end{longtable}
+
+\section{Kết luận}
+
+Một buổi demo tốt không phải là buổi có nhiều lệnh nhất, mà là buổi mỗi thành
+viên đều cho thấy mình hiểu quan hệ giữa yêu cầu, thiết kế, code và bằng chứng.
+Nhóm cần giữ nhịp trình bày ngắn, trực tiếp và trung thực về giới hạn. Khi bị
+hỏi sâu, hãy trả lời theo bốn lớp:
+
+\[
+\boxed{\text{Định nghĩa}}
+\rightarrow
+\boxed{\text{Implementation}}
+\rightarrow
+\boxed{\text{Bằng chứng}}
+\rightarrow
+\boxed{\text{Trade-off}}
+\]
+
+Nếu cả năm thành viên đều làm được điều này, nhóm không chỉ chứng minh chương
+trình chạy đúng trên các testcase đã chọn, mà còn chứng minh được sự hiểu bài
+và khả năng bảo vệ các quyết định kỹ thuật của mình.
+
+\end{document}
