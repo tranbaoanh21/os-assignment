@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <stdio.h>
 
+/* Legacy two-level memory model used when MM_PAGING is disabled. */
 static BYTE _ram[RAM_SIZE];
 
 static struct {
@@ -169,4 +170,3 @@ void dump(void) {
 		}
 	}
 }
-

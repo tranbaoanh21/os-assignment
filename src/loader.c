@@ -18,6 +18,7 @@ static uint32_t avail_pid = 1;
 #define OPT_COPY_FROM_USER	    "copy_from_user"
 #define OPT_COPY_TO_USER	    "copy_to_user"
 
+/* Instruction parser: map textual process instructions to simulator opcodes. */
 static enum ins_opcode_t get_opcode(char * opt) {
 	if (!strcmp(opt, OPT_CALC)) {
 		return CALC;
@@ -48,7 +49,7 @@ static enum ins_opcode_t get_opcode(char * opt) {
 }
 
 struct pcb_t * load(const char * path) {
-	/* Create new PCB for the new process */
+	/* Loader stage: create and initialize the PCB for a new process. */
 	struct pcb_t * proc = (struct pcb_t * )calloc(1, sizeof(struct pcb_t));
 	proc->pid = avail_pid;
 	avail_pid++;
@@ -57,7 +58,7 @@ struct pcb_t * load(const char * path) {
 	proc->bp = PAGE_SIZE;
 	proc->pc = 0;
 
-	/* Read process code from file */
+	/* Parse the process description into the PCB code segment. */
 	FILE * file;
 	if ((file = fopen(path, "r")) == NULL) {
 		printf("Cannot find process description at '%s'\n", path);

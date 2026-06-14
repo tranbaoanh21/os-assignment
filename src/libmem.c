@@ -26,6 +26,7 @@
 
 static pthread_mutex_t mmvm_lock = PTHREAD_MUTEX_INITIALIZER;
 
+/* Route memory operations through syscall 17 instead of direct kernel access. */
 static int mem_syscall(struct pcb_t *proc, struct sc_regs *regs)
 {
   if (proc == NULL || proc->krnl == NULL || regs == NULL)
@@ -89,7 +90,7 @@ struct vm_rg_struct *get_symrg_byid(struct mm_struct *mm, int rgid)
  */
 int __alloc(struct pcb_t *caller, int vmaid, int rgid, addr_t size, addr_t *alloc_addr)
 {
-  /*Allocate at the toproof */
+  /* Serialize logical-region allocation and free-list reuse. */
   pthread_mutex_lock(&mmvm_lock);
   struct vm_rg_struct rgnode;
   struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
@@ -101,6 +102,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, addr_t size, addr_t *allo
 
   if (get_free_vmrg_area(caller, vmaid, size, &rgnode) == 0)
   {
+    /* Prefer a previously freed logical region before growing sbrk. */
     caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_start;
     caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_end;
  

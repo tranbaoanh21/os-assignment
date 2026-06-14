@@ -19,6 +19,7 @@ static int timer_stop = 0;
 
 
 static void * timer_routine(void * args) {
+	/* Global time-slot barrier: wait for every attached simulated device. */
 	while (!timer_stop) {
 		printf("Time slot %3llu\n", (unsigned long long)current_time());
 		int fsh = 0;
@@ -59,6 +60,7 @@ static void * timer_routine(void * args) {
 }
 
 void next_slot(struct timer_id_t * timer_id) {
+	/* Device side of the barrier: finish this slot, then wait for release. */
 	/* Tell to timer that we have done our job in current slot */
 	pthread_mutex_lock(&timer_id->event_lock);
 	timer_id->done = 1;
@@ -135,6 +137,5 @@ void stop_timer() {
 		free(temp);
 	}
 }
-
 
 

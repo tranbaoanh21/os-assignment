@@ -19,13 +19,25 @@ def parse_input(input_filename):
 
 def parse_log(filename, num_cpus):
     cpu_state = {i: None for i in range(num_cpus)}
-    cpu_schedule = {i: {} for i in range(num_cpus)}
+    cpu_intervals = {i: [] for i in range(num_cpus)}
+    dispatch_time = {i: None for i in range(num_cpus)}
     current_time = None
 
     time_slot_pattern = re.compile(r"Time slot\s+(\d+)")
     dispatched_pattern = re.compile(r"CPU\s+(\d+):\s+Dispatched process\s+(\d+)")
+    put_pattern = re.compile(r"CPU\s+(\d+):\s+Put process\s+(\d+)")
     processed_pattern = re.compile(r"CPU\s+(\d+):\s+Processed\s+(\d+)\s+has finished")
     stopped_pattern = re.compile(r"CPU\s+(\d+)\s+stopped")
+
+    def close_interval(cpu, end_time):
+        if cpu_state[cpu] is not None and dispatch_time[cpu] is not None:
+            duration = end_time - dispatch_time[cpu]
+            if duration > 0:
+                cpu_intervals[cpu].append(
+                    (cpu_state[cpu], dispatch_time[cpu], duration)
+                )
+        cpu_state[cpu] = None
+        dispatch_time[cpu] = None
 
     with open(filename, 'r') as f:
         for line in f:
@@ -36,70 +48,61 @@ def parse_log(filename, num_cpus):
             ts_match = time_slot_pattern.search(line)
             if ts_match:
                 current_time = int(ts_match.group(1))
-                for cpu in cpu_state:
-                    cpu_schedule[cpu][current_time] = cpu_state[cpu]
                 continue
 
             d_match = dispatched_pattern.search(line)
             if d_match:
                 cpu = int(d_match.group(1))
                 proc = int(d_match.group(2))
+                if cpu_state[cpu] is not None:
+                    close_interval(cpu, current_time)
                 cpu_state[cpu] = proc
-                cpu_schedule[cpu][current_time] = proc
+                dispatch_time[cpu] = current_time
+                continue
+
+            put_match = put_pattern.search(line)
+            if put_match:
+                cpu = int(put_match.group(1))
+                close_interval(cpu, current_time)
                 continue
 
             p_match = processed_pattern.search(line)
             if p_match:
                 cpu = int(p_match.group(1))
-                cpu_state[cpu] = None
-                cpu_schedule[cpu][current_time] = None
+                close_interval(cpu, current_time)
                 continue
 
             s_match = stopped_pattern.search(line)
             if s_match:
                 cpu = int(s_match.group(1))
-                cpu_state[cpu] = None
-                cpu_schedule[cpu][current_time] = None
+                close_interval(cpu, current_time)
                 continue
 
-    return cpu_schedule
+    return cpu_intervals
 
 
-def build_process_timeline(cpu_schedule):
+def build_process_timeline(cpu_intervals):
     """
     Trả về:
     process_timeline[p] = list các interval (start, duration)
     """
     process_timeline = {}
+    for intervals in cpu_intervals.values():
+        for process, start, duration in intervals:
+            process_timeline.setdefault(process, []).append((start, duration))
 
-    # collect processes
-    for schedule in cpu_schedule.values():
-        for t, p in schedule.items():
-            if p is not None:
-                process_timeline.setdefault(p, set()).add(t)
-
-    # convert thành intervals liên tục
-    result = {}
-
-    for p, times in process_timeline.items():
-        sorted_times = sorted(times)
-        intervals = []
-
-        start = sorted_times[0]
-        prev = start
-
-        for t in sorted_times[1:]:
-            if t == prev + 1:
-                prev = t
+    # Merge adjacent dispatch intervals of the same process for a cleaner graph.
+    for process, intervals in process_timeline.items():
+        merged = []
+        for start, duration in sorted(intervals):
+            if merged and merged[-1][0] + merged[-1][1] == start:
+                previous_start, previous_duration = merged[-1]
+                merged[-1] = (previous_start, previous_duration + duration)
             else:
-                intervals.append((start, prev - start + 1))
-                start = t
-                prev = t
+                merged.append((start, duration))
+        process_timeline[process] = merged
 
-        intervals.append((start, prev - start + 1))
-        result[p] = intervals
-
-    return result
+    return process_timeline
 
 
 def main():
@@ -112,9 +115,8 @@ def main():
     out_img = sys.argv[3]
 
     num_cpus = parse_input(input_file)
-    cpu_schedule = parse_log(log_file, num_cpus)
-
-    process_timeline = build_process_timeline(cpu_schedule)
+    cpu_intervals = parse_log(log_file, num_cpus)
+    process_timeline = build_process_timeline(cpu_intervals)
     processes = sorted(process_timeline.keys())
 
     # màu cho từng process

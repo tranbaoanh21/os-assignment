@@ -20,6 +20,7 @@ static pthread_mutex_t queue_lock;
 
 static struct queue_t running_list;
 #ifdef MLQ_SCHED
+/* MLQ policy state: one ready queue and weighted quota per priority. */
 static struct queue_t mlq_ready_queue[MAX_PRIO];
 static int slot[MAX_PRIO];
 #endif
@@ -38,6 +39,7 @@ static struct pcb_t *find_in_queue(struct queue_t *queue, uint32_t pid)
 
 struct pcb_t *find_proc_by_pid(uint32_t pid)
 {
+	/* Kernel PCB registry lookup across running and ready states. */
 	struct pcb_t *proc;
 	int prio;
 
@@ -108,6 +110,7 @@ struct pcb_t * get_mlq_proc(void) {
 	struct pcb_t * proc = NULL;
 	int prio;
 
+	/* Select and claim a PCB atomically so two CPUs cannot run it together. */
 	pthread_mutex_lock(&queue_lock);
 	/*TODO: get a process from PRIORITY [ready_queue].
 	 *      It worth to protect by a mechanism.
@@ -121,6 +124,7 @@ struct pcb_t * get_mlq_proc(void) {
 	}
 
 	if (proc == NULL) {
+		/* Start a new weighted-slot cycle when no runnable queue has quota. */
 		for (prio = 0; prio < MAX_PRIO; prio++)
 			slot[prio] = MAX_PRIO - prio;
 
@@ -145,10 +149,7 @@ void put_mlq_proc(struct pcb_t * proc) {
 	proc->krnl->mlq_ready_queue = mlq_ready_queue;
 	proc->krnl->running_list = &running_list;
 
-	/* TODO: put running proc to running_list 
-	 *       It worth to protect by a mechanism.
-	 * 
-	 */
+	/* Quantum expired: move the PCB from RUNNING back to its ready queue. */
 	pthread_mutex_lock(&queue_lock);
 	purgequeue(&running_list, proc);
 	enqueue(&mlq_ready_queue[proc->prio], proc);

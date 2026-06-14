@@ -1,25 +1,47 @@
-README.md
-output_img/
-assignment_os_report.aux
-assignment_os_report.fdb_latexmk
-assignment_os_report.fls
-assignment_os_report.lof
-assignment_os_report.log
-assignment_os_report.lot
-assignment_os_report.out
-assignment_os_report.synctex.gz
-assignment_os_report.toc
-os_simulator_study_guide.aux
-os_simulator_study_guide.fdb_latexmk
-os_simulator_study_guide.fls
-os_simulator_study_guide.log
-os_simulator_study_guide.out
-os_simulator_study_guide.synctex.gz
-os_simulator_study_guide.toc
-os_simulator_demo_script.aux
-os_simulator_demo_script.fdb_latexmk
-os_simulator_demo_script.fls
-os_simulator_demo_script.log
-os_simulator_demo_script.out
-os_simulator_demo_script.synctex.gz
-os_simulator_demo_script.toc
+# macOS and editor files
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+~$*
+
+# Compiled simulator artifacts
+/obj/
+/os
+/sched
+/mem
+/pdg
+/src/*.lst
+
+# Generated test output
+/output/*
+!/output/.gitkeep
+
+# LaTeX auxiliary files and local caches
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+/.tex-cache/
+
+# Generated presentation/build workspaces
+/outputs/
+/artifact-build-manifest.json
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Submission archives
+*.zip

@@ -69,6 +69,8 @@ int run(struct pcb_t *proc)
 	struct inst_t ins = proc->code->text[proc->pc];
 	proc->pc++;
 	int stat = 1;
+
+	/* CPU instruction dispatcher: execute one instruction for this time slot. */
 switch (ins.opcode)
 	{
 	case CALC:
@@ -122,6 +124,7 @@ switch (ins.opcode)
 #endif
 		break;
 	case SYSCALL:
+		/* Cross the user/kernel boundary through the syscall dispatcher. */
 		stat = libsyscall(proc, ins.arg_0, ins.arg_1, ins.arg_2, ins.arg_3);
 		break;
 	default:

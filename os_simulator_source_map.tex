@@ -1,0 +1,200 @@
+% !TEX program = lualatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Courier New}[Scale=0.86]
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+\geometry{left=2.2cm,right=2.2cm,top=2.7cm,bottom=2.3cm,headheight=32pt}
+\graphicspath{{assets/}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlist[itemize]{nosep,leftmargin=1.5em}
+\renewcommand{\arraystretch}{1.25}
+
+\definecolor{navy}{RGB}{9,43,76}
+\definecolor{cyan}{RGB}{0,150,155}
+\definecolor{pale}{RGB}{232,243,246}
+\definecolor{orange}{RGB}{220,105,35}
+\definecolor{graytext}{RGB}{75,85,95}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{\color{navy}OS Simulator -- Source Code Map}}
+\rhead{\small CO2018 -- K24 Warriors}
+\lfoot{\small Tài liệu học và chuẩn bị demo}
+\rfoot{\small Trang \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\newcommand{\file}[1]{\texttt{\color{navy}#1}}
+\newcommand{\func}[1]{\texttt{\color{orange}#1}}
+\newcommand{\flow}[1]{%
+  \begin{center}
+  \colorbox{pale}{\parbox{0.92\textwidth}{\centering\ttfamily\color{navy}#1}}
+  \end{center}}
+
+\begin{document}
+
+\begin{center}
+  \includegraphics[height=1.8cm]{logobkheader.png}\\[0.5em]
+  {\LARGE\bfseries\color{navy} BẢN ĐỒ SOURCE CODE OS SIMULATOR}\\[0.35em]
+  {\large File nào thuộc phần nào và nên mở gì khi demo}
+\end{center}
+
+\vspace{0.4em}
+\flow{os.c -> loader.c -> sched.c -> cpu.c -> syscall / memory}
+
+\section*{1. Bốn file quan trọng nhất}
+
+\begin{tabularx}{\textwidth}{>{\ttfamily\color{navy}}p{3.2cm} X}
+\toprule
+\textbf{File} & \textbf{Phần kiến thức chính}\\
+\midrule
+src/sched.c   & Priority scheduler, weighted slot, running list và ownership PCB.\\
+src/libmem.c  & ALLOC/FREE/READ/WRITE, region reuse và copy user/kernel.\\
+src/sys\_mem.c & Syscall memory số 17 và kiểm tra quyền truy cập physical frame.\\
+src/mm64.c    & Canonical address, five-level page-table walk và sparse allocation.\\
+\bottomrule
+\end{tabularx}
+
+\section*{2. Kiến trúc và vòng đời process}
+
+\begin{tabularx}{\textwidth}{>{\ttfamily\color{navy}}p{3.2cm} X}
+\toprule
+\textbf{File} & \textbf{Vai trò}\\
+\midrule
+src/os.c & Khởi tạo simulator, tạo CPU/loader thread và điều khiển vòng đời process.\\
+src/loader.c & Đọc process description, tạo PCB và parse instruction.\\
+src/cpu.c & Lấy instruction tại PC, tăng PC và dispatch sang memory hoặc syscall.\\
+include/common.h & Định nghĩa PCB, kernel structure, instruction và registers.\\
+\bottomrule
+\end{tabularx}
+
+\flow{Process file -> load() -> PCB -> add\_proc() -> get\_proc() -> run()}
+
+\textbf{Hàm cần nhớ:} \func{load()}, \func{run()}, \func{add\_proc()},
+\func{get\_proc()}, \func{put\_proc()}, \func{finish\_proc()}.
+
+\section*{3. Scheduler, multi-CPU và timer}
+
+\begin{tabularx}{\textwidth}{>{\ttfamily\color{navy}}p{3.2cm} X}
+\toprule
+\textbf{File} & \textbf{Vai trò}\\
+\midrule
+src/sched.c & 140 MLQ ready queues, weighted quota, running list và queue lock.\\
+src/queue.c & FIFO operations: enqueue, dequeue và purge.\\
+src/timer.c & Barrier đồng bộ các simulated device theo từng time slot.\\
+src/os.c & CPU thread gọi scheduler và trả PCB khi hết quantum.\\
+\bottomrule
+\end{tabularx}
+
+\flow{READY -> get\_mlq\_proc() -> RUNNING -> put\_mlq\_proc() / FINISHED}
+
+\begin{itemize}
+  \item \func{get\_mlq\_proc()}: quét priority, giảm slot và đưa PCB vào running list.
+  \item \func{put\_mlq\_proc()}: hết quantum, đưa PCB từ running về ready queue.
+  \item \func{next\_slot()}: device báo hoàn tất slot rồi chờ timer giải phóng.
+  \item \func{queue\_lock}: bảo đảm hai CPU không lấy cùng một PCB.
+\end{itemize}
+
+\section*{4. Memory, paging và region reuse}
+
+\begin{tabularx}{\textwidth}{>{\ttfamily\color{navy}}p{3.2cm} X}
+\toprule
+\textbf{File} & \textbf{Vai trò}\\
+\midrule
+src/libmem.c & Memory API, logical region allocation/free và copy operations.\\
+src/mm-vm.c & VMA, tăng sbrk và các thao tác virtual-memory mapping.\\
+src/mm-memphy.c & Mô phỏng RAM/SWAP; cấp, đọc, ghi và trả physical frame.\\
+src/sys\_mem.c & Kernel handler thực thi memory operations sau khi kiểm tra caller.\\
+include/os-mm.h & Các cấu trúc mm, VMA, region và page-table metadata.\\
+\bottomrule
+\end{tabularx}
+
+\flow{cpu.c -> liballoc() -> syscall 17 -> \_\_sys\_memmap() -> \_\_alloc()}
+
+\begin{itemize}
+  \item \func{\_\_alloc()}: ưu tiên lấy vùng từ free-region list trước khi tăng \func{sbrk}.
+  \item \func{\_\_free()}: trả logical region về free-region list.
+  \item \func{MEMPHY\_get\_freefp()}: lấy physical frame trống.
+  \item \file{src/mem.c}: legacy memory model khi không bật \texttt{MM\_PAGING}.
+\end{itemize}
+
+\section*{5. Syscall và PID protection}
+
+\begin{tabularx}{\textwidth}{>{\ttfamily\color{navy}}p{3.2cm} X}
+\toprule
+\textbf{File} & \textbf{Vai trò}\\
+\midrule
+src/syscall.tbl & Khai báo syscall number và handler.\\
+src/syscall.c & Dispatcher \func{\_syscall()} chọn handler theo syscall number.\\
+src/libstd.c & User-side wrapper, chỉ truyền PID và scalar arguments.\\
+src/sys\_mem.c & Tìm caller PCB và kiểm tra ownership trước physical I/O.\\
+src/sched.c & Cung cấp \func{find\_proc\_by\_pid()} từ kernel PCB registry.\\
+\bottomrule
+\end{tabularx}
+
+\flow{libstd / libmem -> \_syscall() -> \_\_sys\_memmap() -> authorization}
+
+\textbf{Hàm cần nhớ:} \func{find\_proc\_by\_pid()},
+\func{caller\_owns\_phyaddr()}, \func{\_\_sys\_memmap()}.
+
+\section*{6. Multi-level paging 64-bit và canonical address}
+
+\begin{tabularx}{\textwidth}{>{\ttfamily\color{navy}}p{3.2cm} X}
+\toprule
+\textbf{File} & \textbf{Vai trò}\\
+\midrule
+include/mm64.h & Bit ranges, masks và macro lấy index PGD/P4D/PUD/PMD.\\
+src/mm64.c & Canonical validation, sparse page tables và five-level walk.\\
+include/os-mm.h & Lưu page-table root và thống kê walks/accesses/bytes.\\
+src/mm-memphy.c & Cấp frame vật lý cho các mapping mới.\\
+\bottomrule
+\end{tabularx}
+
+\flow{canonical check -> PGD -> P4D -> PUD -> PMD -> PT -> frame}
+
+\begin{itemize}
+  \item \func{paging64\_is\_canonical()}: từ chối địa chỉ 64-bit không hợp lệ.
+  \item \func{walk\_pte()}: đi qua năm cấp và tùy chọn cấp sparse branch.
+  \item \func{vmap\_pgd\_memset()}: map page tại virtual address.
+  \item \func{paging64\_owns\_fpn()}: kiểm tra process có sở hữu frame không.
+\end{itemize}
+
+\section*{7. Thứ tự mở source khi bị hỏi}
+
+\begin{tabularx}{\textwidth}{>{\bfseries\color{navy}}p{3.4cm} X}
+\toprule
+\textbf{Câu hỏi} & \textbf{Mở theo thứ tự}\\
+\midrule
+Scheduler chọn process thế nào? &
+\file{src/sched.c} $\rightarrow$ \file{src/queue.c} $\rightarrow$ \file{src/os.c}\\
+Timer thread làm gì? &
+\file{src/timer.c} $\rightarrow$ các lời gọi \func{next\_slot()} trong \file{src/os.c}\\
+ALLOC/FREE hoạt động thế nào? &
+\file{src/libmem.c} $\rightarrow$ \file{src/sys\_mem.c} $\rightarrow$ \file{src/mm-vm.c}\\
+Vì sao PID khác bị từ chối? &
+\file{src/sys\_mem.c} $\rightarrow$ \file{src/sched.c} $\rightarrow$ \file{src/syscall.c}\\
+Canonical/MM64 nằm ở đâu? &
+\file{include/mm64.h} $\rightarrow$ \file{src/mm64.c} $\rightarrow$ \file{include/os-mm.h}\\
+\bottomrule
+\end{tabularx}
+
+\vfill
+\begin{center}
+\color{graytext}\small
+Nguyên tắc trả lời khi demo:
+\textbf{định nghĩa kiến thức nền $\rightarrow$ chỉ đoạn code $\rightarrow$ giải thích input/output $\rightarrow$ nêu giới hạn.}
+\end{center}
+
+\end{document}

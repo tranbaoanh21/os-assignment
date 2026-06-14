@@ -40,6 +40,7 @@ int __sys_ni_syscall(struct krnl_t *krnl, struct sc_regs *regs)
 #define __SYSCALL(nr, sym) case nr: return __##sym(krnl,pid,regs);
 int _syscall(struct krnl_t *krnl, uint32_t pid, uint32_t nr, struct sc_regs* regs)
 {
+	/* Central kernel dispatch boundary selected by the syscall number. */
 	switch (nr) {
 	#include "syscalltbl.lst"
 	default: return __sys_ni_syscall(krnl, regs);

@@ -19,6 +19,7 @@ int libsyscall (struct pcb_t *caller,
 {
    struct sc_regs regs;
 
+	/* User-side syscall wrapper: pass only scalar arguments and caller PID. */
 	/*
 	 * @bksysnet: Please note that the architecture design of
 	 *            dual spaces does not allow direct access 
