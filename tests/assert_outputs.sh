@@ -47,6 +47,18 @@ assert_contains output/os_mem_roundtrip.output \
 assert_contains output/os_mem_roundtrip_spec.output \
   "MEM read PID 1 region 3 offset 0 value 65" \
   "spec-form copy instructions must preserve the byte value"
+assert_contains output/os_paging_same_va.output \
+  "MEM read PID 1 region 1 offset 0 value 65" \
+  "PID 1 must preserve its value at virtual address zero"
+assert_contains output/os_paging_same_va.output \
+  "MEM read PID 2 region 1 offset 0 value 66" \
+  "PID 2 must preserve a different value at the same virtual address"
+assert_contains output/os_paging_boundary.output \
+  "MEM read PID 1 region 1 offset 255 value 65" \
+  "last byte of the first data page must preserve its value"
+assert_contains output/os_paging_boundary.output \
+  "MEM read PID 1 region 1 offset 256 value 66" \
+  "first byte of the second data page must preserve its value"
 assert_contains output/os_syscall_list.output "0-sys_listsyscall" \
   "syscall table must include listsyscall"
 assert_contains output/os_syscall_list.output "17-sys_memmap" \

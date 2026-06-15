@@ -20,6 +20,7 @@
 !/output/.gitkeep
 
 # LaTeX auxiliary files and local caches
+*.pdf
 *.aux
 *.fdb_latexmk
 *.fls

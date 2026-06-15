@@ -23,6 +23,8 @@ for test in \
   os_mem_roundtrip \
   os_mem_roundtrip_spec \
   os_mem_protection \
+  os_paging_same_va \
+  os_paging_boundary \
   sched \
   sched_0 \
   sched_1 \
