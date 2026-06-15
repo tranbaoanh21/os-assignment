@@ -1,0 +1,739 @@
+% !TEX program = lualatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Courier New}[Scale=0.83]
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\geometry{left=2.1cm,right=2.1cm,top=2.8cm,bottom=2.4cm,headheight=34pt}
+\graphicspath{{assets/}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlength{\emergencystretch}{3em}
+\setlist[itemize]{nosep,leftmargin=1.5em}
+\setlist[enumerate]{itemsep=0.25em,leftmargin=1.8em}
+\renewcommand{\arraystretch}{1.22}
+\setcounter{tocdepth}{2}
+
+\definecolor{navy}{RGB}{9,43,76}
+\definecolor{cyan}{RGB}{0,155,160}
+\definecolor{orange}{RGB}{226,112,38}
+\definecolor{red}{RGB}{190,65,65}
+\definecolor{pale}{RGB}{231,243,246}
+\definecolor{palewarn}{RGB}{250,235,220}
+\definecolor{palered}{RGB}{250,230,230}
+\definecolor{codebg}{RGB}{245,247,249}
+\definecolor{linegray}{RGB}{200,207,214}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{\color{navy}OS Simulator -- Defense Question Bank}}
+\rhead{\small CO2018 -- K24 Warriors}
+\lfoot{\small Tài liệu chuẩn bị phản biện trực tiếp}
+\rfoot{\small Trang \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\titleformat{\section}{\Large\bfseries\color{navy}}{\thesection.}{0.55em}{}
+\titleformat{\subsection}{\large\bfseries\color{navy}}{\thesubsection.}{0.55em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{cyan}}{}{0em}{}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{linegray},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  numbers=none
+}
+
+\newcommand{\code}[1]{\texttt{\color{navy}#1}}
+\newcommand{\q}[1]{%
+  \vspace{0.55em}\noindent
+  \colorbox{pale}{\parbox{\dimexpr\textwidth-2\fboxsep}{\textbf{\color{navy}Câu hỏi:} #1}}%
+  \par\vspace{0.3em}}
+\newcommand{\ans}[1]{\textbf{\color{cyan}Trả lời đề xuất.} #1\par}
+\newcommand{\proofcode}[1]{\textbf{\color{orange}Mở code/bằng chứng.} #1\par}
+\newcommand{\limitanswer}[1]{\textbf{\color{red}Giới hạn cần nói thẳng.} #1\par}
+\newcommand{\danger}[1]{%
+  \colorbox{palered}{\parbox{\dimexpr\textwidth-2\fboxsep}{\textbf{\color{red}Không nên trả lời:} #1}}\par}
+\newcommand{\flow}[1]{%
+  \begin{center}
+  \colorbox{pale}{\parbox{0.94\textwidth}{\centering\ttfamily\color{navy}#1}}
+  \end{center}}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\includegraphics[height=2.2cm]{logobkheader.png}\\[1em]
+{\Large\bfseries ĐẠI HỌC BÁCH KHOA -- ĐHQG TP.HCM}\\[0.4em]
+{\large Khoa Khoa học và Kỹ thuật Máy tính}\\[3em]
+
+{\fontsize{25pt}{30pt}\selectfont\bfseries\color{navy}
+NGÂN HÀNG CÂU HỎI PHẢN BIỆN\\
+OS SIMULATOR}\\[1.2em]
+
+{\Large Kịch bản trả lời, bằng chứng code và giới hạn cần thừa nhận}\\[2em]
+
+\colorbox{palewarn}{\parbox{0.82\textwidth}{
+\centering
+\textbf{Mục tiêu:} không học thuộc output. Mỗi câu trả lời phải đi theo chuỗi\\[0.3em]
+\textbf{định nghĩa $\rightarrow$ cơ chế trong code $\rightarrow$ input/output chứng minh $\rightarrow$ giới hạn.}
+}}
+
+\vfill
+\begin{tabular}{ll}
+\textbf{Môn học:} & Hệ điều hành -- CO2018\\
+\textbf{Lớp:} & L08\\
+\textbf{Nhóm:} & K24 Warriors\\
+\textbf{GVHD:} & Thầy Hoàng Lê Hải Thanh\\
+\end{tabular}
+
+\vfill
+{\large TP. Hồ Chí Minh, tháng 06/2026}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Cách sử dụng tài liệu khi chuẩn bị demo}
+
+Các thông tin từ nhóm đã báo cáo trước cho thấy thầy có thể yêu cầu chạy code,
+đổi input ngay tại chỗ, giải thích output, chỉ trực tiếp logic hàm, hỏi phần
+user/kernel, MMU, paging, scheduler, swap và cách nhóm kiểm chứng phần có hỗ trợ
+từ AI. Vì vậy, mục tiêu của tài liệu này không phải tạo ``đáp án thuộc lòng'',
+mà là giúp nhóm trả lời có cấu trúc và trung thực.
+
+\subsection{Khung trả lời bốn bước}
+
+\begin{enumerate}
+  \item \textbf{Định nghĩa:} nói khái niệm bằng một hoặc hai câu.
+  \item \textbf{Cơ chế trong code:} nêu đúng file và hàm giữ property.
+  \item \textbf{Bằng chứng:} giải thích input cô lập điều gì và output nào cần quan sát.
+  \item \textbf{Giới hạn/trade-off:} nói rõ điều test chưa chứng minh hoặc thiết kế còn đơn giản.
+\end{enumerate}
+
+\textbf{Ví dụ ngắn:}
+
+\begin{quote}
+``Weighted slot là số lần một priority queue được chọn trong một chu kỳ.
+Trong \code{get\_mlq\_proc()}, mỗi lần dequeue sẽ giảm \code{slot[prio]}.
+Test \code{sched\_out\_of\_slot} cho thấy queue 137 được chọn ba lần trước khi
+chuyển queue. Tuy nhiên test này không chứng minh scheduler không starvation
+trong mọi workload vô hạn.''
+\end{quote}
+
+\subsection{Ba nguyên tắc sống còn}
+
+\begin{itemize}
+  \item Không khẳng định ``test pass nghĩa là không còn bug''. Chỉ nói test chứng minh các property đã assert.
+  \item Không nói swap hoàn chỉnh end-to-end nếu chưa tạo được demo rõ ràng. Nói code path nào có và điều gì chưa chứng minh.
+  \item Khi không chắc một chi tiết, mở code rồi giải thích. Không đoán.
+\end{itemize}
+
+\section{Kiến trúc tổng thể và vòng đời process}
+
+\q{Simulator này có phải là một hệ điều hành thật không?}
+\ans{Không. Đây là một chương trình C chạy trong user space. Nó dùng các
+\code{pthread} thật để mô phỏng loader, timer và các CPU; còn process mô phỏng
+chỉ là các cấu trúc \code{pcb\_t}, không phải process thật của Linux/macOS.}
+\proofcode{\code{src/os.c} tạo loader/CPU thread; \code{include/common.h} định
+nghĩa \code{pcb\_t}.}
+\limitanswer{Không có privilege level, interrupt phần cứng hoặc context switch
+thật. Các khái niệm đó được mô hình hóa bằng hàm và cấu trúc dữ liệu.}
+
+\q{Giải thích luồng từ input đến khi process hoàn thành.}
+\ans{Configuration quy định quantum, số CPU, số process, thời điểm load và
+priority. Loader đọc process file, tạo PCB rồi gọi \code{add\_proc}. CPU gọi
+\code{get\_proc}, thực thi từng instruction bằng \code{run}. Hết quantum thì
+\code{put\_proc}; khi \code{pc == code->size} thì process được giải phóng.}
+\flow{config -> loader/load() -> PCB -> add\_proc() -> get\_proc() -> run() -> put\_proc()/finish}
+\proofcode{\code{src/os.c: read\_config(), ld\_routine(), cpu\_routine()};
+\code{src/loader.c: load()}; \code{src/cpu.c: run()}.}
+
+\q{PCB lưu gì và vì sao cần PCB?}
+\ans{PCB lưu PID, priority, đường dẫn, code segment, program counter, registers,
+con trỏ kernel và cấu trúc memory. Nó cho phép CPU tạm dừng process khi hết
+quantum rồi tiếp tục đúng trạng thái ở lần dispatch sau.}
+\proofcode{\code{struct pcb\_t} trong \code{include/common.h}.}
+
+\q{Program counter thay đổi ở đâu?}
+\ans{Trong \code{run()}, CPU lấy instruction tại \code{code->text[pc]} rồi tăng
+\code{pc}. CPU routine kiểm tra \code{pc == code->size} để xác định process đã
+hoàn thành.}
+\proofcode{\code{src/cpu.c: run()} và \code{src/os.c: cpu\_routine()}.}
+
+\section{Scheduler, MLQ và thay đổi số CPU}
+
+\q{MLQ của bài hoạt động như thế nào?}
+\ans{Có 140 ready queue, index từ 0 đến 139. Scheduler quét từ index nhỏ đến
+lớn, nên số priority nhỏ được xét trước. Trong mỗi queue, process được dequeue
+theo FIFO. Mỗi queue còn có quota \code{slot[prio] = MAX\_PRIO - prio}.}
+\proofcode{\code{src/sched.c: init\_scheduler(), get\_mlq\_proc()}.}
+
+\q{Phân biệt priority, weighted slot, quantum và FIFO.}
+\ans{\textbf{Priority} chọn queue nào được xét trước. \textbf{Weighted slot} là
+số lần queue được chọn trong một chu kỳ. \textbf{Quantum} là số instruction tối
+đa process chạy trong một lần dispatch. \textbf{FIFO} là thứ tự process bên
+trong cùng một queue.}
+\danger{``Một slot bằng một instruction.'' Trong implementation, một weighted
+slot tương ứng gần với một lần dispatch; mỗi dispatch có thể chạy nhiều
+instruction tùy quantum.}
+
+\q{Khi một queue dùng hết slot nhưng process chưa xong thì sao?}
+\ans{Lần \code{put\_proc} đưa process về đúng priority queue. Tuy nhiên
+\code{get\_mlq\_proc} bỏ qua queue có \code{slot[prio] == 0} và thử queue khác.
+Khi không chọn được process nào, toàn bộ slot được reset rồi quét lại.}
+\proofcode{Hai vòng quét và khối reset trong \code{src/sched.c:
+get\_mlq\_proc()}. Test: \code{sched\_out\_of\_slot}.}
+
+\q{Nếu chỉ có một queue đang có process và queue đó hết slot thì sao?}
+\ans{Vòng quét đầu không chọn được process. Scheduler reset toàn bộ slot rồi
+quét lần hai, vì vậy process ở queue duy nhất sẽ được chọn lại. Nó không bị mất,
+nhưng cũng không chuyển sang queue khác vì thiết kế này không thay đổi priority
+của PCB.}
+\limitanswer{Đây là weighted MLQ, không phải multilevel feedback queue. Process
+không tự động thăng/hạ queue dựa trên hành vi CPU/I/O.}
+
+\q{Priority cao đến trong lúc process khác đang chạy có cướp CPU ngay không?}
+\ans{Không. CPU chỉ gọi scheduler tại scheduling boundary: lúc chưa có process,
+hết quantum hoặc process hoàn thành. Process priority cao mới đến sẽ ảnh hưởng
+lần dispatch tiếp theo, không cắt ngang instruction hiện tại.}
+\proofcode{\code{src/os.c: cpu\_routine()}; test \code{sched\_prio}.}
+
+\q{Vì sao hai CPU không lấy cùng một PCB?}
+\ans{\code{get\_mlq\_proc} giữ \code{queue\_lock} trong toàn bộ đoạn dequeue
+khỏi ready queue và enqueue vào \code{running\_list}. Vì vậy PCB được claim một
+cách nguyên tử trước khi CPU khác có thể lấy nó.}
+\proofcode{\code{src/sched.c: queue\_lock, get\_mlq\_proc()}.}
+
+\q{Nếu thầy đổi từ một CPU thành hai hoặc ba CPU thì chương trình có chạy không?}
+\ans{Có. Dòng đầu config là \code{quantum num\_cpus num\_processes}.
+\code{main()} cấp mảng thread theo \code{num\_cpus}, attach mỗi CPU vào timer,
+rồi tạo đúng số CPU thread. Scheduler dùng queue lock nên vẫn bảo vệ ownership.}
+\proofcode{\code{src/os.c: read\_config(), main()}; testcase hiện có
+\code{sched\_2\_cpu}.}
+\limitanswer{Thứ tự log có thể đổi do pthread scheduling. Điều phải giữ là
+invariant, ví dụ không có hai CPU sở hữu cùng PID tại cùng thời điểm. Chưa có
+stress test dài với số CPU/process rất lớn.}
+
+\q{Thầy đổi số CPU thì output nào được phép khác?}
+\ans{CPU nào dispatch PID nào và thứ tự các dòng độc lập có thể khác. Tổng hành
+vi logic phải đúng: process không mất, không chạy trùng PCB, quantum được tôn
+trọng và chương trình kết thúc. Không nên yêu cầu diff output tuyệt đối giữa hai
+lần chạy đa luồng.}
+
+\q{Scheduler có thể starvation không?}
+\ans{Weighted quota buộc queue ưu tiên cao dùng hết ngân sách rồi scheduler có
+thể xét queue thấp hơn trong cùng chu kỳ. Điều này giảm starvation so với strict
+priority thuần. Tuy nhiên với workload động vô hạn và thiết kế reset hiện tại,
+nhóm không tuyên bố đã chứng minh tuyệt đối không starvation.}
+
+\section{Timer thread, concurrency và race condition}
+
+\q{Timer thread làm gì?}
+\ans{Timer tạo barrier theo time slot. Mỗi CPU và loader gọi
+\code{next\_slot()} để báo đã hoàn thành công việc của slot hiện tại. Timer chờ
+tất cả device, tăng thời gian rồi signal cho chúng tiếp tục. Timer không chọn
+process và không thực thi instruction.}
+\proofcode{\code{src/timer.c: timer\_routine(), next\_slot(), attach\_event()}.}
+
+\q{Nếu bỏ timer barrier thì chuyện gì xảy ra?}
+\ans{CPU thread có thể chạy qua nhiều instruction trước khi loader hoặc CPU
+khác kịp tiến triển. Khi đó time slot mô phỏng không còn ý nghĩa và kết quả phụ
+thuộc mạnh vào tốc độ scheduling thread thật của hệ điều hành host.}
+
+\q{Các lock chính bảo vệ tài nguyên gì?}
+\ans{\code{queue\_lock} bảo vệ ready queues và running list;
+\code{mmvm\_lock} bảo vệ region allocation/free và một số thao tác memory;
+\code{memphy\_lock} bảo vệ free physical frame list. Timer dùng mutex và
+condition variable riêng cho mỗi attached event.}
+\proofcode{\code{src/sched.c}, \code{src/libmem.c}, \code{src/mm-memphy.c},
+\code{src/timer.c}.}
+
+\q{Có thể deadlock không?}
+\ans{Trong các đường demo chính, lock thường được lấy và thả trong phạm vi ngắn,
+không giữ đồng thời nhiều lock theo vòng phụ thuộc rõ ràng. Bộ test hiện tại
+chạy đến cuối. Tuy nhiên nhóm chưa có công cụ model checking hoặc stress test
+dài để chứng minh không deadlock trong mọi interleaving.}
+
+\section{Logic READ, WRITE và MMU}
+
+\q{Giải thích đầy đủ logic lệnh READ.}
+\ans{Instruction \code{read source offset destination} dùng \code{source} như
+region ID, không phải raw address. \code{libread} đóng gói
+\code{SYSMEM\_READ\_OP} và gọi syscall 17. Kernel tìm caller PCB bằng PID, rồi
+\code{\_\_read} kiểm tra region tồn tại và offset nằm trong
+\code{[start,end)}. Sau đó \code{pg\_getval} lấy page, tính physical address,
+gọi physical read có kiểm tra ownership và trả byte về register destination.}
+\flow{CPU run -> libread -> syscall 17 -> \_\_sys\_memmap -> \_\_read -> pg\_getval -> physical read}
+\proofcode{\code{src/cpu.c}, \code{src/libmem.c}, \code{src/sys\_mem.c}.}
+
+\q{Vì sao offset bằng size phải bị từ chối?}
+\ans{Region dùng khoảng nửa mở \code{[start,end)}. Offset hợp lệ phải thỏa
+\code{start + offset < end}. Nếu allocation có size 50 thì offset 49 hợp lệ,
+offset 50 vượt biên.}
+\proofcode{Điều kiện bounds trong \code{\_\_read()} và \code{\_\_write()}.
+Test \code{os\_mem\_reuse} đọc offset 49.}
+
+\q{Logic WRITE khác READ ở đâu?}
+\ans{\code{libwrite} đóng gói region, offset và byte value vào syscall.
+\code{\_\_write} kiểm tra region/bounds, rồi \code{pg\_setval} lấy page và ghi
+byte xuống physical memory. READ trả dữ liệu qua register; WRITE nhận dữ liệu
+từ argument.}
+\proofcode{\code{src/libmem.c: libwrite(), \_\_write(), pg\_setval()}.}
+
+\q{MMU trong simulator là gì?}
+\ans{MMU được mô phỏng bằng các hàm dịch virtual page sang physical frame thông
+qua page table. Nó không phải MMU phần cứng. Với MM64, \code{walk\_pte} đi qua
+PGD, P4D, PUD, PMD và PT; PTE cuối chứa trạng thái present/swapped và frame.}
+
+\q{Vì sao phải phân biệt virtual address và physical address?}
+\ans{Virtual address thuộc không gian riêng của process và được kiểm tra qua
+region/page table. Physical address là vị trí byte trong MEMRAM. Tách hai lớp
+giúp process không trực tiếp suy ra quyền truy cập chỉ từ một địa chỉ vật lý.}
+
+\section{ALLOC, FREE, KMALLOC và kernel cache}
+
+\q{ALLOC hoạt động như thế nào?}
+\ans{\code{liballoc} gửi \code{SYSMEM\_ALLOC\_OP}. Kernel gọi
+\code{\_\_alloc}. Hàm này ưu tiên tìm một free logical region đủ lớn; nếu không
+có thì tăng VMA bằng \code{inc\_vma\_limit}, map thêm page/frame và lưu region
+vào \code{symrgtbl[rgid]}. Địa chỉ bắt đầu được trả về register tương ứng.}
+\proofcode{\code{src/libmem.c: liballoc(), \_\_alloc(),
+get\_free\_vmrg\_area()}; \code{src/mm-vm.c: inc\_vma\_limit()}.}
+
+\q{FREE có trả physical frame ngay không?}
+\ans{Đối với user logical region trong implementation này, \code{\_\_free}
+đưa khoảng region vào free-region list và xóa symbol/register. Nó chứng minh
+logical region reuse, không nên kết luận mọi physical frame đã được unmap và
+trả ngay tại thời điểm FREE. Khi process kết thúc, \code{destroy\_mm} giải phóng
+user frames và page-table tree.}
+\proofcode{\code{src/libmem.c: \_\_free()}; \code{src/mm64.c: destroy\_mm()}.}
+
+\q{Phân biệt ALLOC và KMALLOC.}
+\ans{\code{ALLOC} cấp logical user region trong VMA và dùng page-table mapping.
+\code{KMALLOC} cấp kernel region bắt đầu từ \code{PAGING\_KMEM\_BASE}, yêu cầu
+các physical frame liên tiếp và lưu metadata trong \code{ksymrgtbl},
+\code{kphy\_start}, \code{kphy\_npages}.}
+\proofcode{\code{src/libmem.c: \_\_alloc()} so với \code{\_\_kmalloc()};
+\code{include/os-mm.h}.}
+\limitanswer{Đây là mô hình đơn giản, không tương đương đầy đủ Linux
+\code{kmalloc}.}
+
+\q{Kernel cache pool là gì?}
+\ans{Cache pool cấp trước một vùng kernel bằng \code{\_\_kmalloc}, chia thành
+các slot cùng kích thước \code{align}. \code{\_\_kmem\_cache\_alloc} trả lần
+lượt từng slot bằng \code{storage + used * align}. Nó mô phỏng ý tưởng slab/cache
+cho object cùng kích thước.}
+\proofcode{\code{src/libmem.c: \_\_kmem\_cache\_pool\_create(),
+\_\_kmem\_cache\_alloc()}.}
+
+\q{Copy from user và copy to user hoạt động ra sao?}
+\ans{\code{copy\_from\_user} đọc từng byte từ user region bằng
+\code{\_\_read\_user\_mem}, rồi ghi vào kernel region. Nếu kernel destination
+chưa tồn tại, hàm cấp bằng \code{\_\_kmalloc}. \code{copy\_to\_user} làm chiều
+ngược lại. Test roundtrip ghi 65 ở user, copy vào kernel, copy sang user region
+khác rồi đọc lại 65.}
+\proofcode{\code{src/libmem.c: \_\_kmem\_copy\_from\_user(),
+\_\_kmem\_copy\_to\_user()}; test \code{os\_mem\_roundtrip\_spec}.}
+
+\section{Syscall, wrapping và user/kernel protection}
+
+\q{Wrapping là gì trong bài này?}
+\ans{Wrapper là hàm phía thư viện chuyển lời gọi mức instruction thành syscall
+với các scalar arguments. Ví dụ \code{liballoc}, \code{libread},
+\code{libkmem\_copy\_from\_user} chuẩn bị \code{sc\_regs} rồi gọi syscall 17.
+Wrapper che chi tiết dispatcher và tạo một giao diện thống nhất.}
+
+\q{Tại sao syscall không truyền trực tiếp PCB pointer?}
+\ans{User side không nên được phép đưa một \code{pcb\_t*} tùy ý cho kernel.
+Wrapper chỉ truyền PID và scalar arguments. Kernel dùng
+\code{find\_proc\_by\_pid} để lấy PCB thật trong registry scheduler. Đây là
+trust boundary đơn giản của simulator.}
+\proofcode{\code{src/libstd.c: libsyscall()}; \code{src/sys\_mem.c:
+\_\_sys\_memmap()}; \code{src/sched.c: find\_proc\_by\_pid()}.}
+
+\q{Syscall table được tạo và dispatch thế nào?}
+\ans{\code{src/syscall.tbl} ánh xạ number sang entry point. Script
+\code{syscalltbl.sh} sinh \code{syscalltbl.lst}. \code{\_syscall} dùng macro để
+tạo switch và gọi handler tương ứng. Syscall memory của bài là số 17.}
+\proofcode{\code{src/syscall.tbl}, \code{src/syscall.c}, \code{Makefile}.}
+
+\q{Biết physical address có được đọc frame không?}
+\ans{Không. Với operation physical READ/WRITE, kernel gọi
+\code{caller\_owns\_phyaddr}. Trong MM64, hàm này đi qua page-table tree của
+caller và chỉ cho phép nếu một present PTE của caller trỏ tới frame đó.}
+\proofcode{\code{src/sys\_mem.c: caller\_owns\_phyaddr()};
+\code{src/mm64.c: paging64\_owns\_fpn()}; test
+\code{os\_cross\_pid\_protection}.}
+
+\q{Phân biệt translation và authorization.}
+\ans{Translation trả lời ``virtual address này nằm ở physical frame nào''.
+Authorization trả lời ``caller có quyền dùng frame đó không''. Một địa chỉ dịch
+được hoặc bị lộ không tự động tạo quyền truy cập.}
+
+\q{Bài có kiểm tra user/kernel address range hoàn chỉnh không?}
+\ans{Bài tách user regions trong \code{symrgtbl} và kernel regions trong
+\code{ksymrgtbl}, kernel allocation bắt đầu từ \code{PAGING\_KMEM\_BASE}, và
+copy đi qua các helper riêng. Tuy nhiên nhóm không tuyên bố đây là cơ chế
+privilege/range protection đầy đủ như kernel thật; đây là mô hình hóa bằng
+metadata, wrappers và ownership check.}
+
+\section{Paging 64-bit, canonical address và swap}
+
+\q{Tại sao cần multi-level paging?}
+\ans{Một flat page table cho không gian địa chỉ lớn sẽ tốn bộ nhớ rất lớn dù
+process chỉ dùng ít địa chỉ. Multi-level paging chỉ cấp các bảng cho branch
+được chạm, đổi lại mỗi translation có thể cần nhiều lần truy cập page table.}
+
+\q{Địa chỉ 64-bit được chia như thế nào?}
+\ans{Trong mô hình MM64, page size là 4 KiB nên offset dùng 12 bit. Page number
+được chia thành năm index 9 bit: PGD, P4D, PUD, PMD, PT. Mỗi bảng có 512 entry
+và kích thước 4096 byte nếu mỗi entry là 8 byte.}
+\proofcode{\code{include/mm64.h}; \code{src/mm64.c: get\_pd\_from\_address()}.}
+
+\q{Canonical address là gì?}
+\ans{Không phải mọi mẫu 64-bit đều hợp lệ. Với địa chỉ 57-bit của mô hình,
+bit 63--57 phải là sign extension của bit 56. \code{paging64\_is\_canonical}
+kiểm tra điều này trước khi walk hoặc cấp bảng.}
+\proofcode{\code{src/mm64.c: paging64\_is\_canonical(),
+vmap\_pgd\_memset()}.}
+
+\q{walks, accesses và bytes nghĩa là gì?}
+\ans{\code{walks} tăng một lần mỗi khi gọi page-table walk.
+\code{accesses} tăng theo số cấp table thực sự được truy cập trong walk.
+\code{bytes} tăng khi \code{alloc\_table} cấp một bảng sparse mới. Một walk đủ
+năm cấp thường làm accesses tăng năm, nhưng walk dừng sớm có thể ít hơn.}
+\proofcode{\code{src/mm64.c: walk\_pte(), alloc\_table(), print\_pgtbl()}.}
+
+\q{Page fault được mô phỏng ở đâu?}
+\ans{Khi \code{pg\_getpage} thấy PTE không present, nó tìm victim bằng FIFO,
+lấy swap frame, copy victim từ RAM sang swap, cập nhật PTE, rồi nếu target từng
+ở swap thì copy target trở lại RAM. Đây là đường xử lý tương tự page fault
+trong mô hình.}
+\proofcode{\code{src/libmem.c: pg\_getpage(), find\_victim\_page()};
+\code{src/mm-vm.c: \_\_mm\_swap\_page(), \_\_mm\_swap\_page\_in()}.}
+
+\q{Swap đã hoàn chỉnh và demo được chưa?}
+\ans{Code path swap-out/swap-in có tồn tại: FIFO victim, copy page giữa MEMRAM
+và MEMSWAP, cập nhật PTE. Tuy nhiên bộ demo hiện tại chưa cô lập được một
+kịch bản end-to-end mạnh chứng minh dữ liệu swap-out rồi swap-in vẫn đúng.
+Vì vậy nhóm nên nói ``đã có implementation path nhưng chưa có bằng chứng demo
+đủ mạnh'', không nói swap hoàn chỉnh tuyệt đối.}
+\danger{``Swap chắc chắn hoàn chỉnh vì code có hàm swap.'' Có code path không
+đồng nghĩa đã kiểm chứng mọi trường hợp.}
+
+\q{MEMRAM và MEMSWAP có phải RAM/ổ đĩa thật không?}
+\ans{Không. Chúng là \code{memphy\_struct} chứa mảng byte và free-frame list.
+MEMRAM/MEMSWAP mô phỏng thiết bị nhớ trong chương trình C.}
+\proofcode{\code{src/mm-memphy.c}; \code{include/os-mm.h}.}
+
+\section{Input, output, assertions và thay đổi trực tiếp}
+
+\q{Giải thích dòng đầu của configuration.}
+\ans{Dòng đầu là \code{quantum num\_cpus num\_processes}. Ví dụ
+\code{2 2 3} nghĩa là quantum 2 instruction mỗi dispatch, hai CPU thread và ba
+process sẽ được loader tạo. Với paging config mới, dòng tiếp theo có kích thước
+MEMRAM và các MEMSWAP.}
+\proofcode{\code{src/os.c: read\_config()}.}
+
+\q{Nếu thầy đổi input, nhóm kiểm tra gì trước khi chạy?}
+\ans{Kiểm tra số process ở dòng đầu khớp số dòng process; tên process file tồn
+tại; priority nằm trong 0--139; instruction count trong process file khớp số
+dòng; memory size đủ; các region ID nằm trong bảng symbol. Sau đó dự đoán
+property và output cần quan sát trước khi chạy.}
+
+\q{Tại sao output giữa Linux và macOS hoặc giữa hai lần chạy có thể khác?}
+\ans{Loader và CPU là pthread, nên thứ tự các event độc lập có thể khác theo
+scheduler của host. Semantic invariant phải giống: không chạy trùng PCB, dữ
+liệu đúng, quyền truy cập đúng, canonical address bị kiểm tra và chương trình
+kết thúc.}
+
+\q{Assertion là gì?}
+\ans{Assertion là kiểm tra tự động một property bắt buộc. Script
+\code{tests/assert\_outputs.sh} không yêu cầu toàn bộ log giống tuyệt đối; nó
+tìm các bằng chứng semantic như cross-PID bị deny, region được reuse, byte 65
+roundtrip và non-canonical address bị reject.}
+\proofcode{\code{tests/assert\_outputs.sh}.}
+
+\q{Test pass chứng minh được gì và không chứng minh được gì?}
+\ans{Nó chứng minh source build được, các testcase chạy đến cuối và các
+property được assert xuất hiện trong output. Nó không chứng minh mọi input,
+mọi race interleaving, mọi trường hợp swap-full hoặc mọi lỗi memory safety đều
+đã được xử lý.}
+
+\subsection{Các tình huống thầy có thể yêu cầu sửa tại chỗ}
+
+\begin{longtable}{>{\bfseries\color{navy}}p{3.6cm} p{5.4cm} p{6.1cm}}
+\toprule
+\textbf{Yêu cầu} & \textbf{Dự đoán trước khi chạy} & \textbf{Điều cần giải thích}\\
+\midrule
+\endhead
+Đổi 1 CPU thành 2/3 CPU &
+Các event độc lập có thể đổi thứ tự; throughput mô phỏng tăng; PCB ownership
+phải duy nhất. &
+\code{num\_cpus}, thread creation, \code{queue\_lock}, timer attachment.\\
+
+Đổi quantum từ 2 thành 1 &
+CPU gọi \code{put\_proc} thường xuyên hơn; nhiều scheduling boundary hơn. &
+Quantum khác weighted slot; mỗi dispatch chỉ chạy tối đa một instruction.\\
+
+Cho hai process cùng priority &
+Trong cùng queue, thứ tự là FIFO theo lúc loader enqueue. &
+\code{enqueue/dequeue} và nondeterminism nếu load cùng slot.\\
+
+Đổi priority process &
+Queue được xét thay đổi; số weighted slot cũng thay đổi theo
+\code{140-prio}. &
+Priority số nhỏ được quét trước nhưng có quota lớn hơn theo công thức hiện tại.\\
+
+READ offset bằng size &
+Phải trả lỗi vì region là \code{[start,end)}. &
+Chỉ điều kiện bounds trong \code{\_\_read}.\\
+
+PID 2 đọc frame PID 1 &
+Kernel phải in denied. &
+Translation khác authorization; \code{caller\_owns\_phyaddr}.\\
+
+Địa chỉ MM64 non-canonical &
+Phải bị reject trước khi walk/cấp bảng; thống kê bytes không tăng vì mapping đó. &
+\code{paging64\_is\_canonical}.\\
+
+Giảm RAM rất nhỏ &
+Allocation có thể fail; swap path chỉ kích hoạt khi truy cập page không present,
+không phải mọi allocation tự động swap. &
+Nói trước giới hạn và không hứa demo swap nếu chưa chuẩn bị testcase.\\
+\bottomrule
+\end{longtable}
+
+\section{Câu hỏi về quá trình làm và sử dụng AI}
+
+\q{Nhóm có sử dụng AI không?}
+\ans{Có thể trả lời trung thực: ``Nhóm có sử dụng AI như công cụ hỗ trợ đọc
+codebase cũ, gợi ý testcase, rà lỗi và hỗ trợ tài liệu. Nhóm không coi output
+của AI là bằng chứng đúng. Mỗi thay đổi được đối chiếu với đặc tả, đọc lại code,
+build từ sạch và kiểm tra bằng testcase/semantic assertions.''}
+
+\q{AI được dùng ở khâu nào?}
+\ans{Nêu đúng những khâu nhóm thực sự đã dùng, ví dụ: gợi ý cách tổ chức báo
+cáo/demo; hỗ trợ tìm luồng call; đề xuất negative test; rà code và giải thích
+trade-off. Không nên kể AI tự làm toàn bộ implementation nếu điều đó không phản
+ánh quá trình thật.}
+
+\q{Làm sao biết AI đúng hay sai?}
+\ans{Không tin theo câu trả lời đơn lẻ. Nhóm kiểm chứng bằng bốn lớp:
+\begin{enumerate}
+  \item đối chiếu đặc tả và source gốc;
+  \item đọc diff theo từng file và giải thích được từng thay đổi;
+  \item tạo testcase cô lập property, gồm cả negative test;
+  \item clean build, chạy semantic assertions và thử thay đổi input.
+\end{enumerate}}
+\proofcode{\code{git diff}, \code{make clean \&\& make all},
+\code{make test}, \code{tests/assert\_outputs.sh}.}
+
+\q{Một ví dụ AI/gợi ý có thể sai và nhóm xử lý thế nào?}
+\ans{Ví dụ dễ nói: yêu cầu output đa luồng khớp tuyệt đối là không hợp lý vì
+pthread ordering có thể đổi. Nhóm chuyển từ so sánh toàn bộ log sang semantic
+assertions kiểm tra invariant. Hoặc khi cú pháp copy trong đặc tả ngắn hơn
+test nội bộ, nhóm đọc loader và bổ sung parser tương thích rồi tạo testcase
+\code{os\_mem\_roundtrip\_spec}.}
+
+\q{Nếu thầy hỏi ``đoạn này ai viết'' thì trả lời sao?}
+\ans{Trả lời đúng phân công và quá trình review thực tế. Người phụ trách phải
+giải thích được mục tiêu, input/output, các hàm liên quan và giới hạn. Nếu một
+đoạn được hỗ trợ bởi AI hoặc thành viên khác, nói rõ nhóm đã review và test nó
+như thế nào; không nhận sai tác giả và không né câu hỏi kỹ thuật.}
+
+\section{Các câu hỏi khó và cách thừa nhận giới hạn}
+
+\q{Tại sao codebase thay đổi thiết kế so với source gốc?}
+\ans{Một số thay đổi mở rộng thiết kế để đáp ứng yêu cầu và kiểm chứng rõ hơn:
+PCB có \code{mm} riêng; syscall memory dùng PID lookup; MM64 dùng sparse
+page-table tree; scheduler có running list bảo vệ multi-CPU. Nhóm phải chỉ ra
+được yêu cầu/property mà mỗi thay đổi phục vụ và trade-off của nó.}
+\limitanswer{Thiết kế mở rộng làm code phức tạp hơn source khung. Nhóm không nên
+khẳng định đây là cách duy nhất hoặc tối ưu nhất.}
+
+\q{Phần nào có nguy cơ over-engineer?}
+\ans{Unified syscall nhiều operation, kernel cache helpers, MM64 sparse tree và
+bộ test mở rộng vượt mức TODO tối thiểu. Chúng có giá trị vì giúp mô phỏng
+trust boundary và tạo bằng chứng; nhưng tăng bề mặt code, chi phí review và rủi
+ro bug. Khi bảo vệ, tập trung vào property cần thiết thay vì khoe số lượng tính
+năng.}
+
+\q{Điểm yếu kỹ thuật lớn nhất hiện tại là gì?}
+\ans{Có thể nêu ba điểm: swap chưa có demo end-to-end mạnh; chưa có stress test
+race/swap-full/input lỗi dài; một số lookup/lock là global và tuyến tính nên
+không scale. Nêu kèm hướng cải thiện: testcase ép swap, sanitizer/stress,
+per-structure lock hoặc PID map.}
+
+\q{Nếu demo bất ngờ fail thì xử lý thế nào?}
+\ans{Không chạy lại vô thức. Đọc lỗi và phân loại:
+\begin{itemize}
+  \item build fail: kiểm tra generated syscall list và compiler;
+  \item output ordering khác: kiểm tra invariant thay vì diff tuyệt đối;
+  \item assertion fail: mở input và output tương ứng, lần theo call-flow;
+  \item hang: nghi barrier/deadlock, xem CPU/loader nào chưa detach hoặc
+  \code{next\_slot}.
+\end{itemize}}
+
+\section{Bảng mở source trong 10 giây}
+
+\begin{longtable}{>{\bfseries\color{navy}}p{4cm} p{5.3cm} p{5.8cm}}
+\toprule
+\textbf{Thầy hỏi} & \textbf{Mở file/hàm đầu tiên} & \textbf{Sau đó mở}\\
+\midrule
+\endhead
+Luồng toàn bộ simulator & \code{src/os.c: main(), cpu\_routine(), ld\_routine()} &
+\code{src/loader.c}, \code{src/cpu.c}\\
+MLQ/weighted slot & \code{src/sched.c: get\_mlq\_proc()} &
+\code{src/queue.c}, input scheduler\\
+Hai/ba CPU & \code{src/os.c: main()} &
+\code{src/sched.c: queue\_lock, running\_list}\\
+Timer/barrier & \code{src/timer.c: timer\_routine(), next\_slot()} &
+các lời gọi \code{next\_slot} trong \code{src/os.c}\\
+Logic READ & \code{src/libmem.c: libread(), \_\_read(), pg\_getval()} &
+\code{src/sys\_mem.c: SYSMEM\_READ/IO\_READ}\\
+Logic WRITE & \code{src/libmem.c: libwrite(), \_\_write(), pg\_setval()} &
+\code{src/sys\_mem.c: SYSMEM\_WRITE/IO\_WRITE}\\
+ALLOC/FREE & \code{src/libmem.c: \_\_alloc(), \_\_free()} &
+\code{src/mm-vm.c: inc\_vma\_limit()}\\
+ALLOC vs KMALLOC & \code{src/libmem.c: \_\_alloc(), \_\_kmalloc()} &
+\code{include/os-mm.h}\\
+Wrapping/syscall & \code{src/libstd.c}, \code{src/syscall.c} &
+\code{src/sys\_mem.c}, \code{src/syscall.tbl}\\
+PID protection & \code{src/sys\_mem.c: caller\_owns\_phyaddr()} &
+\code{src/sched.c: find\_proc\_by\_pid()}\\
+MM64/canonical & \code{src/mm64.c: paging64\_is\_canonical(), walk\_pte()} &
+\code{include/mm64.h}\\
+Swap & \code{src/libmem.c: pg\_getpage()} &
+\code{src/mm-vm.c: \_\_mm\_swap\_page()}\\
+Assertions & \code{tests/assert\_outputs.sh} &
+input và output testcase tương ứng\\
+\bottomrule
+\end{longtable}
+
+\section{Bộ câu hỏi luyện nhanh cho từng thành viên}
+
+\subsection{Bảo Anh -- kiến trúc và kiểm chứng}
+\begin{enumerate}
+  \item Simulator khác OS thật ở điểm nào?
+  \item Loader, scheduler, CPU, timer, syscall và MMU nối với nhau ra sao?
+  \item Vì sao test pass không đồng nghĩa không còn bug?
+  \item Nhóm dùng AI ở đâu và kiểm chứng thế nào?
+  \item Ba giới hạn lớn nhất của bài là gì?
+\end{enumerate}
+
+\subsection{Quốc Trung -- scheduler và synchronization}
+\begin{enumerate}
+  \item Phân biệt priority, slot, quantum và FIFO.
+  \item Vì sao hai CPU không lấy cùng PCB?
+  \item Một queue duy nhất hết slot thì chuyện gì xảy ra?
+  \item Timer barrier ngăn lỗi mô phỏng nào?
+  \item Nếu đổi thành ba CPU, invariant nào phải giữ?
+\end{enumerate}
+
+\subsection{Quốc Bảo -- memory và copy}
+\begin{enumerate}
+  \item Giải thích từng bước của READ và WRITE.
+  \item FREE trả logical region hay physical frame?
+  \item ALLOC khác KMALLOC thế nào?
+  \item Copy from user/to user bảo toàn dữ liệu thế nào?
+  \item Vì sao offset bằng size là lỗi?
+\end{enumerate}
+
+\subsection{Quốc An -- syscall và protection}
+\begin{enumerate}
+  \item Wrapper và syscall dispatcher khác nhau thế nào?
+  \item Vì sao không truyền PCB pointer từ user?
+  \item Translation khác authorization thế nào?
+  \item Cross-PID protection kiểm tra ownership ở đâu?
+  \item User/kernel separation của bài mạnh đến đâu?
+\end{enumerate}
+
+\subsection{Trường Giang -- MM64, paging và swap}
+\begin{enumerate}
+  \item Vì sao cần multi-level paging?
+  \item Canonical address là gì?
+  \item walks/accesses/bytes nghĩa là gì?
+  \item Page fault và FIFO victim diễn ra thế nào?
+  \item Swap đã được chứng minh end-to-end chưa?
+\end{enumerate}
+
+\section{Checklist trước khi bước vào phòng demo}
+
+\begin{itemize}
+  \item Mỗi thành viên chạy được testcase thuộc phần mình và giải thích input trước khi nhìn output.
+  \item Mỗi thành viên mở được file/hàm chính trong dưới 10 giây.
+  \item Cả nhóm thuộc luồng: loader $\rightarrow$ PCB $\rightarrow$ scheduler
+  $\rightarrow$ CPU $\rightarrow$ syscall/MMU $\rightarrow$ MEMRAM/MEMSWAP.
+  \item Chuẩn bị sẵn câu trả lời trung thực về AI, swap và các giới hạn.
+  \item Chạy trước:
+\end{itemize}
+
+\begin{lstlisting}
+make clean && make all
+make test
+./os sched_prio
+./os sched_out_of_slot
+./os sched_2_cpu
+./os os_mem_roundtrip_spec
+./os os_cross_pid_protection
+./os os_mm64_canonical
+\end{lstlisting}
+
+\section{Cách xử lý khi bị hỏi ngoài kịch bản}
+
+\q{Nếu chưa nhớ chính xác tên hàm hoặc chưa chắc câu trả lời thì làm gì?}
+\ans{Không đoán bừa. Nói rõ phần đang chắc chắn ở mức property, sau đó xin mở
+source để lần theo call path. Ví dụ: ``Em chưa nhớ chính xác tên helper, nhưng
+READ bắt buộc phải kiểm tra region và offset trước khi dịch sang physical
+address. Em xin mở từ \code{libread()} để chỉ đúng hàm thực hiện từng bước.''}
+Cách trả lời này thể hiện hiểu thiết kế, đồng thời tránh khẳng định sai chi tiết.
+
+\q{Nếu output trực tiếp khác output đã chuẩn bị thì trả lời thế nào?}
+\ans{Trước tiên phân biệt khác thứ tự log do pthread với sai property. Nhóm kiểm
+tra các invariant như không dispatch cùng PCB cho hai CPU, giá trị đọc đúng,
+truy cập trái PID bị từ chối và địa chỉ non-canonical bị reject. Nếu invariant
+sai, nhóm thừa nhận đây là lỗi cần điều tra; nếu chỉ thứ tự log khác nhưng
+invariant giữ, nhóm giải thích nguyên nhân nondeterminism của host scheduler.}
+
+\q{Nếu thầy yêu cầu chỉ ra một lỗi từng gặp trong quá trình làm?}
+\ans{Trình bày theo bốn bước: triệu chứng quan sát được; giả thuyết nguyên nhân;
+test nhỏ dùng để cô lập lỗi; thay đổi code và assertion ngăn tái phát. Không cần
+kể câu chuyện hoàn hảo. Một câu trả lời tốt phải cho thấy nhóm biết chuyển từ
+output bất thường thành property có thể kiểm tra.}
+
+\q{Nếu phát hiện một phần chưa được chứng minh đầy đủ ngay trong buổi demo?}
+\ans{Nói thẳng phạm vi bằng chứng hiện có. Ví dụ với swap: ``Source có đường
+page replacement và swap-in/swap-out, nhưng testcase hiện tại chưa ép đủ áp lực
+để chứng minh toàn bộ vòng đời end-to-end. Vì vậy nhóm chỉ khẳng định phần code
+path và giới hạn bằng chứng.'' Thừa nhận đúng giới hạn đáng tin cậy hơn việc
+suy diễn từ một dòng output.}
+
+\begin{center}
+\colorbox{palewarn}{\parbox{0.9\textwidth}{\centering
+\textbf{Câu kết luận nên nhớ:}\\
+``Nhóm không chỉ dựa vào output. Nhóm xác định property cần giữ, chỉ ra code giữ
+property đó, thiết kế input cô lập nó, kiểm tra output bằng assertion và nói rõ
+những trường hợp chưa được chứng minh.''}}
+\end{center}
+
+\end{document}
