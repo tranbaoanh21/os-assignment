@@ -21,6 +21,7 @@
 
 # LaTeX auxiliary files and local caches
 *.pdf
+*.tex
 *.aux
 *.fdb_latexmk
 *.fls
